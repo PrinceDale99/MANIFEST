@@ -135,30 +135,30 @@ export const PROOF_STAGE_CONFIG: Record<
   ProofStage,
   { label: string; description: string }
 > = {
-  [ProofStage.IDLE]: { label: 'Idle', description: 'Waiting to start' },
+  [ProofStage.IDLE]: { label: 'Ready', description: 'Waiting to start' },
   [ProofStage.WITNESS_EVALUATION]: {
-    label: 'Witness Evaluation',
-    description: 'Evaluating private inputs...',
+    label: 'Reading Your Data',
+    description: 'Processing your private information...',
   },
   [ProofStage.CIRCUIT_COMPILATION]: {
-    label: 'Circuit Compilation',
-    description: 'Compiling ZK circuit...',
+    label: 'Building Proof',
+    description: 'Creating mathematical proof...',
   },
   [ProofStage.PROOF_GENERATION]: {
-    label: 'Proof Generation',
-    description: 'Generating zero-knowledge proof...',
+    label: 'Generating Proof',
+    description: 'Generating proof of your bid...',
   },
   [ProofStage.LEDGER_SUBMISSION]: {
-    label: 'Ledger Submission',
-    description: 'Submitting proof to Midnight ledger...',
+    label: 'Sending to Blockchain',
+    description: 'Submitting proof to the network...',
   },
   [ProofStage.COMPLETE]: {
-    label: 'Complete',
-    description: 'Proof verified and committed',
+    label: 'Done',
+    description: 'Proof verified and recorded',
   },
   [ProofStage.FAILED]: {
-    label: 'Failed',
-    description: 'Proof generation failed',
+    label: 'Error',
+    description: 'Something went wrong',
   },
 }
 
