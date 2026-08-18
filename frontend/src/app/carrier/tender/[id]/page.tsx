@@ -24,10 +24,10 @@ interface BidState {
 }
 
 const BID_STEPS = [
-  { label: 'Configure Bid', description: 'Set amount and salt' },
-  { label: 'Generate Commitment', description: 'Create sealed hash' },
-  { label: 'Submit to Chain', description: 'ZK proof generation' },
-  { label: 'Reveal & Verify', description: 'Prove preimage' },
+  { label: 'Set Your Bid', description: 'Enter amount and security code' },
+  { label: 'Create Seal', description: 'Generate mathematical fingerprint' },
+  { label: 'Submit Private Bid', description: 'Send proof to blockchain' },
+  { label: 'Reveal & Win', description: 'Prove your bid is real' },
 ]
 
 export default function CarrierTenderDetailPage({ params }: { params: { id: string } }) {
@@ -185,7 +185,7 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Tenders
+          Back to Auctions
         </a>
 
         <div className="flex items-center gap-4">
@@ -198,7 +198,7 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
         </div>
 
         <p className="mt-3 text-sm text-zinc-400">
-          Your bid amount and salt are private witnesses. Only the commitment hash is stored on-chain.
+          Your bid amount and security code stay private. Only a mathematical seal is stored on the blockchain.
         </p>
       </div>
 
@@ -245,13 +245,13 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
           {bid.step === 0 && (
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-                Configure Your Bid
+                Set Your Bid Amount
               </h2>
 
               <div className="space-y-4">
                 <div>
                   <label className="mb-1.5 block text-sm text-zinc-300">
-                    Bid Amount (cents per mile)
+                    Your Bid (cents per mile)
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -272,7 +272,7 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
 
                 <div>
                   <label className="mb-1.5 block text-sm text-zinc-300">
-                    Salt (auto-derived or manual)
+                    Security Code (auto-generated or manual)
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -310,11 +310,11 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
           {bid.step === 1 && (
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-                Commitment Generated
+                Your Bid is Sealed
               </h2>
 
               <div className="mb-4 rounded-lg border border-zinc-700 bg-zinc-800/50 p-4">
-                <p className="mb-1 text-xs text-zinc-500">Your Sealed Bid</p>
+                <p className="mb-1 text-xs text-zinc-500">Your Private Bid</p>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-zinc-400">Amount</span>
@@ -346,7 +346,7 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
                   onClick={handleSubmitCommitment}
                   className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
                 >
-                  Submit Sealed Bid →
+                  Submit Private Bid →
                 </button>
               </div>
             </div>
@@ -356,7 +356,7 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
           {bid.step === 2 && (
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-                Generating ZK Proof
+                Creating Mathematical Proof
               </h2>
               <ProofProgress currentStage={bid.proofStage} error={bid.proofError} />
 
@@ -367,11 +367,11 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
                       onClick={handleRevealBid}
                       className="w-full rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-amber-500"
                     >
-                      ⚡ Reveal Bid (Prove Commitment)
+                      ⚡ Reveal Your Bid (Prove It's Real)
                     </button>
                   ) : (
                     <p className="text-center text-sm text-zinc-400">
-                      Bid submitted! Waiting for reveal phase...
+                      Bid submitted! Waiting for reveal phase to start...
                     </p>
                   )}
                 </div>
@@ -383,7 +383,7 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
           {bid.step === 3 && bid.revealed && (
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-                Bid Revealed & Verified
+                Your Bid Was Verified
               </h2>
 
               <div className="mb-4 flex items-center gap-3 rounded-lg border border-emerald-900/50 bg-emerald-900/10 p-4">
@@ -393,8 +393,8 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-emerald-400">Successfully Revealed</p>
-                  <p className="text-xs text-zinc-400">Your bid has been verified on-chain</p>
+                  <p className="text-sm font-medium text-emerald-400">Successfully Verified</p>
+                  <p className="text-xs text-zinc-400">Your bid was confirmed on the blockchain</p>
                 </div>
               </div>
 
@@ -405,8 +405,8 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
               />
 
               <p className="mt-4 text-xs text-zinc-500">
-                Your bid was revealed and verified. The ZK proof confirms your commitment without
-                exposing the exact amount to other carriers.
+                Your bid was verified. The mathematical proof confirms your bid is real without
+                showing the exact amount to other carriers.
               </p>
 
               <div className="mt-4 flex gap-3">
@@ -414,13 +414,13 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
                   href="/carrier"
                   className="flex-1 rounded-lg border border-zinc-700 px-4 py-2.5 text-center text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800"
                 >
-                  Browse More Tenders
+                  Find More Auctions
                 </a>
                 <a
                   href={`/audit/${params.id}`}
                   className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700"
                 >
-                  🔍 View Audit Trail
+                  🔍 See Full Proof
                 </a>
               </div>
             </div>
@@ -429,7 +429,7 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
           {/* Tender Details */}
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-              Tender Details
+              Job Details
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -459,10 +459,10 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
               🔒 Privacy Guarantee
             </h3>
             <ul className="space-y-1.5 text-[11px] text-zinc-400">
-              <li>• Your bid amount is a private witness</li>
-              <li>• Only the commitment hash is on-chain</li>
-              <li>• Reveal proves preimage without leaking salt</li>
-              <li>• Rivals cannot see your exact quote</li>
+              <li>• Your bid amount stays hidden</li>
+              <li>• Only a math seal is on the blockchain</li>
+              <li>• Reveal proves your bid is real</li>
+              <li>• Competitors can't see your price</li>
             </ul>
           </div>
 
@@ -471,19 +471,19 @@ export default function CarrierTenderDetailPage({ params }: { params: { id: stri
             <ol className="space-y-2 text-[11px] text-zinc-400">
               <li className="flex gap-2">
                 <span className="font-bold text-emerald-400">1.</span>
-                <span>Set your bid amount and derive a salt</span>
+                <span>Enter your bid and get a security code</span>
               </li>
               <li className="flex gap-2">
                 <span className="font-bold text-emerald-400">2.</span>
-                <span>Generate a commitment hash (stored on-chain)</span>
+                <span>Create a math seal (stored on blockchain)</span>
               </li>
               <li className="flex gap-2">
                 <span className="font-bold text-emerald-400">3.</span>
-                <span>During reveal, prove your commitment matches</span>
+                <span>During reveal, prove your bid matches</span>
               </li>
               <li className="flex gap-2">
                 <span className="font-bold text-emerald-400">4.</span>
-                <span>Lowest valid bid wins the freight contract</span>
+                <span>Lowest bid wins the freight job</span>
               </li>
             </ol>
           </div>
