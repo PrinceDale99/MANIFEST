@@ -15,9 +15,15 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Manifest — Zero-Knowledge Freight Tendering Protocol',
+  title: 'Manifest — Private Freight Auctions',
   description:
-    'Cryptographic sealed-bid reverse auctions for B2B freight procurement on Midnight Network.',
+    'Fair, private freight auctions powered by zero-knowledge math. Post tenders, submit sealed bids, and verify results on the Midnight blockchain.',
+  keywords: ['freight', 'auction', 'zero-knowledge', 'blockchain', 'logistics', 'shipping', 'bidding'],
+  openGraph: {
+    title: 'Manifest — Private Freight Auctions',
+    description: 'Fair, private freight auctions powered by zero-knowledge math.',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({
