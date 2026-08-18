@@ -8,9 +8,9 @@ import LaneDisplay from '@/components/ui/LaneDisplay'
 
 const PHASES = [
   { label: 'Created', status: TenderStatus.DRAFT },
-  { label: 'Bidding Open', status: TenderStatus.BIDDING_OPEN },
-  { label: 'Reveal Phase', status: TenderStatus.REVEAL_PHASE },
-  { label: 'Settled', status: TenderStatus.SETTLED },
+  { label: 'Collecting Bids', status: TenderStatus.BIDDING_OPEN },
+  { label: 'Revealing', status: TenderStatus.REVEAL_PHASE },
+  { label: 'Completed', status: TenderStatus.SETTLED },
 ]
 
 export default function ShipperTenderDetailPage({ params }: { params: { id: string } }) {
@@ -86,9 +86,9 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
     return (
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center">
         <div className="mb-4 text-5xl">❌</div>
-        <h3 className="mb-2 text-lg font-semibold text-white">Tender Not Found</h3>
+        <h3 className="mb-2 text-lg font-semibold text-white">Auction Not Found</h3>
         <a href="/shipper" className="text-sm text-emerald-400 hover:text-emerald-300">
-          ← Back to Dashboard
+          ← Back to Your Tenders
         </a>
       </div>
     )
@@ -104,7 +104,7 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Dashboard
+          Back to Your Tenders
         </a>
 
         <div className="flex items-center gap-4">
@@ -124,7 +124,7 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
       {/* Phase Progress */}
       <div className="mb-8 rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-          Tender Progress
+          Auction Progress
         </h2>
         <div className="flex items-center">
           {PHASES.map((phase, index) => {
@@ -171,7 +171,7 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
           {/* Load Details */}
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-              Load Details
+              Job Details
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -194,7 +194,7 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
           {/* Carrier Commitments */}
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-              Carrier Bids ({tender.carrierCount})
+              Bids Received ({tender.carrierCount})
             </h2>
             {tender.carrierCount > 0 ? (
               <div className="space-y-3">
@@ -217,13 +217,13 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
                     <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500">
                       {tender.status === TenderStatus.REVEAL_PHASE || tender.status === TenderStatus.SETTLED
                         ? 'Revealed'
-                        : 'Sealed'}
+                        : 'Private'}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">No bids submitted yet.</p>
+              <p className="text-sm text-zinc-500">No bids received yet.</p>
             )}
           </div>
         </div>
@@ -258,7 +258,7 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
                   disabled={actionLoading}
                   className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
                 >
-                  {actionLoading ? 'Processing...' : 'Open Bidding'}
+                  {actionLoading ? 'Processing...' : 'Start Collecting Bids'}
                 </button>
               )}
               {tender.status === TenderStatus.BIDDING_OPEN && (
@@ -267,7 +267,7 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
                   disabled={actionLoading}
                   className="w-full rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-amber-500 disabled:opacity-50"
                 >
-                  {actionLoading ? 'Processing...' : 'Transition to Reveal'}
+                  {actionLoading ? 'Processing...' : 'Start Reveal Phase'}
                 </button>
               )}
               {tender.status === TenderStatus.REVEAL_PHASE && (
@@ -276,7 +276,7 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
                   disabled={actionLoading}
                   className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
                 >
-                  {actionLoading ? 'Processing...' : 'Settle Tender'}
+                  {actionLoading ? 'Processing...' : 'Complete Auction'}
                 </button>
               )}
               {(tender.status === TenderStatus.DRAFT ||
@@ -287,7 +287,7 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
                   disabled={actionLoading}
                   className="w-full rounded-lg border border-red-900 bg-red-900/20 px-4 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-900/30 disabled:opacity-50"
                 >
-                  {actionLoading ? 'Processing...' : 'Cancel Tender'}
+                  {actionLoading ? 'Processing...' : 'Cancel Auction'}
                 </button>
               )}
               {tender.status === TenderStatus.SETTLED && (
@@ -295,7 +295,7 @@ export default function ShipperTenderDetailPage({ params }: { params: { id: stri
                   href={`/audit/${tender.tenderId}`}
                   className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
                 >
-                  🔍 View Audit Trail
+                  🔍 See Full Proof
                 </a>
               )}
             </div>
