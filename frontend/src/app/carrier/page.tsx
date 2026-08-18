@@ -41,9 +41,9 @@ export default function CarrierBrowsePage() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="mb-2 text-2xl font-bold text-white">Browse Tenders</h1>
+        <h1 className="mb-2 text-2xl font-bold text-white">Available Auctions</h1>
         <p className="text-sm text-zinc-400">
-          Find freight tenders and submit sealed bids. Your bid amount stays private until reveal.
+          Find freight jobs and submit private bids. Your bid amount stays hidden until the reveal phase.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export default function CarrierBrowsePage() {
                 : 'text-zinc-400 hover:bg-zinc-800/50'
             }`}
           >
-            Bidding ({biddingCount})
+            Accepting Bids ({biddingCount})
           </button>
           <button
             onClick={() => setFilter('reveal')}
@@ -78,11 +78,11 @@ export default function CarrierBrowsePage() {
                 : 'text-zinc-400 hover:bg-zinc-800/50'
             }`}
           >
-            Reveal ({revealCount})
+            Revealing ({revealCount})
           </button>
         </div>
         <p className="text-xs text-zinc-500">
-          {filteredTenders.length} tender{filteredTenders.length !== 1 ? 's' : ''} available
+          {filteredTenders.length} auction{filteredTenders.length !== 1 ? 's' : ''} available
         </p>
       </div>
 
@@ -97,8 +97,8 @@ export default function CarrierBrowsePage() {
       ) : filteredTenders.length === 0 ? (
         <EmptyState
           icon="🚛"
-          title="No Active Tenders"
-          description="Check back later for new freight opportunities. All bids are sealed with zero-knowledge proofs."
+          title="No Auctions Available"
+          description="Check back later for new freight jobs. All bids are private and mathematically guaranteed."
         />
       ) : (
         <div className="space-y-3">
