@@ -4,10 +4,12 @@
   "private": true,
   "description": "Manifest — Zero-Knowledge Freight Tendering Protocol on Midnight Network",
   "scripts": {
-    "compile": "compact compile contracts/manifest.compact --output managed",
+    "compile": "npx tsx scripts/compile.ts",
+    "compile:raw": "compact compile contracts/manifest.compact --output managed",
     "test": "vitest run",
     "test:watch": "vitest",
     "deploy": "npx tsx scripts/deploy.ts",
+    "upgrade": "npx tsx scripts/deploy.ts",
     "seed": "npx tsx scripts/seed.ts",
     "frontend:dev": "cd frontend && npm run dev",
     "frontend:build": "cd frontend && npm run build",
