@@ -1,0 +1,38 @@
+{
+  "name": "manifest-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Manifest — Zero-Knowledge Freight Tendering Protocol on Midnight Network",
+  "scripts": {
+    "compile": "compact compile contracts/manifest.compact --output managed",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "deploy": "npx tsx scripts/deploy.ts",
+    "seed": "npx tsx scripts/seed.ts",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "frontend:start": "cd frontend && npm start",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@midnight-ntwrk/compact-js": "^2.5.3",
+    "@midnight-ntwrk/compact-js-command": "^2.5.3",
+    "@midnight-ntwrk/compact-runtime": "^0.16.0",
+    "@midnight-ntwrk/wallet-sdk": "^1.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@midnight-ntwrk/compact-js": { "optional": true },
+    "@midnight-ntwrk/compact-js-command": { "optional": true },
+    "@midnight-ntwrk/compact-runtime": { "optional": true },
+    "@midnight-ntwrk/wallet-sdk": { "optional": true }
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

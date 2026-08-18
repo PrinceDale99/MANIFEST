@@ -1,0 +1,24 @@
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y curl xz-utils tar unzip git ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Install Compact developer tools (CLI wrapper)
+RUN curl --proto '=https' --tlsv1.2 -LsSf \
+    https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
+
+# Source the env to get compact on PATH
+ENV PATH="/root/.local/bin:$PATH"
+
+WORKDIR /app
+
+# Copy contract files
+COPY contracts/ ./contracts/
+
+# Install compiler AND compile in one RUN to persist state
+RUN compact update 0.33.0 && \
+    compact --version && \
+    compact compile contracts/manifest.compact managed && \
+    echo "=== Compilation output ===" && \
+    ls -la managed/
+
+CMD ["ls", "-la", "/app/managed/"]

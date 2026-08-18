@@ -1,0 +1,178 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// Manifest — Zero-Knowledge Freight Tendering Protocol
+// Compact Smart Contract for Midnight Network (v0.19+ syntax)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// PRIVACY MODEL — PUBLIC LEDGER ENTRIES vs PRIVATE WITNESSES
+// ────────────────────────────────────────────────────────────
+// PUBLIC (visible on-chain):
+//   tenderId, shipperPk, loadHash, reservePriceCommitment,
+//   biddingDeadline, revealDeadline, tenderStatus,
+//   carrierCommitments, lowestDisclosedBid, awardedCarrier
+//
+// PRIVATE (witness-only, never on-chain):
+//   bidAmount, salt, carrier secret key
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pragma language_version >= 0.19;
+
+import CompactStandardLibrary;
+
+// ─── Domain Types ──────────────────────────────────────────────────────────
+
+export enum TenderStatus {
+  draft,
+  biddingOpen,
+  revealPhase,
+  settled,
+  cancelled
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+
+// Derive a deterministic 32-byte carrier identifier from a secret key.
+// persistentHash ensures: same secret key → same carrier ID every time.
+pure circuit derive_pk(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "manifest:carrier:"), sk]
+  );
+}
+
+// Compute a sealed-bid commitment hash.
+// commitment = hash(tenderId || carrierPk || bidAmount || salt)
+pure circuit compute_commitment(
+  tId: Bytes<32>,
+  pk: Bytes<32>,
+  amount: Bytes<32>,
+  salt: Bytes<32>
+): Bytes<32> {
+  return persistentHash<Vector<4, Bytes<32>>>(
+    [tId, pk, amount, salt]
+  );
+}
+
+// ─── Ledger State ──────────────────────────────────────────────────────────
+
+export sealed ledger tenderId: Bytes<32>;
+export sealed ledger shipperPk: Bytes<32>;
+export sealed ledger loadHash: Bytes<32>;
+export sealed ledger reservePriceCommitment: Bytes<32>;
+export sealed ledger biddingDeadline: Uint<64>;
+export sealed ledger revealDeadline: Uint<64>;
+
+export ledger tenderStatus: TenderStatus;
+export ledger lowestDisclosedBid: Uint<64>;
+export ledger awardedCarrier: Bytes<32>;
+
+// Per-carrier commitment hashes: carrierPk -> commitment hash
+export ledger carrierCommitments: Map<Bytes<32>, Bytes<32>>;
+
+// ─── Witnesses ─────────────────────────────────────────────────────────────
+
+witness local_secret_key(): Bytes<32>;
+witness store_bid_amount(amount: Uint<64>): [];
+witness get_bid_amount(): Uint<64>;
+witness store_salt(salt: Bytes<32>): [];
+witness get_salt(): Bytes<32>;
+
+// ─── Constructor ───────────────────────────────────────────────────────────
+
+constructor(
+  _tenderId: Bytes<32>,
+  _loadHash: Bytes<32>,
+  _reservePriceCommitment: Bytes<32>,
+  _biddingDeadline: Uint<64>,
+  _revealDeadline: Uint<64>
+) {
+  tenderId = disclose(_tenderId);
+  shipperPk = disclose(derive_pk(local_secret_key()));
+  loadHash = disclose(_loadHash);
+  reservePriceCommitment = disclose(_reservePriceCommitment);
+  biddingDeadline = disclose(_biddingDeadline);
+  revealDeadline = disclose(_revealDeadline);
+  tenderStatus = TenderStatus.draft;
+  lowestDisclosedBid = disclose(0xFFFFFFFFFFFFFFFF);
+  awardedCarrier = disclose(pad(32, ""));
+}
+
+// ─── Circuit: openBidding ──────────────────────────────────────────────────
+
+export circuit openBidding(): [] {
+  assert(tenderStatus == TenderStatus.draft, "Tender must be in DRAFT status");
+  const caller = derive_pk(local_secret_key());
+  assert(disclose(caller == shipperPk), "Only the shipper can open bidding");
+  tenderStatus = TenderStatus.biddingOpen;
+}
+
+// ─── Circuit: submitBidCommitment ─────────────────────────────────────────
+// Carrier submits a sealed-bid commitment. bidAmount and salt are private.
+// Only the commitment hash goes on-chain.
+
+export circuit submitBidCommitment(bidAmount: Uint<64>, salt: Bytes<32>): [] {
+  assert(tenderStatus == TenderStatus.biddingOpen, "Bidding is not open");
+
+  // Store private data locally for later reveal
+  store_bid_amount(bidAmount);
+  store_salt(salt);
+
+  // Compute commitment — all inputs are private, result is disclosed as hash
+  const carrierPk = disclose(derive_pk(local_secret_key()));
+  const valueBytes = bidAmount as Bytes<32>;
+  const commitment = disclose(compute_commitment(tenderId, carrierPk, valueBytes, salt));
+
+  // Register on-chain: hash only — no bid data leaked
+  carrierCommitments.insert(carrierPk, commitment);
+}
+
+// ─── Circuit: transitionToReveal ──────────────────────────────────────────
+
+export circuit transitionToReveal(): [] {
+  assert(tenderStatus == TenderStatus.biddingOpen, "Tender must be in BIDDING_OPEN");
+  tenderStatus = TenderStatus.revealPhase;
+}
+
+// ─── Circuit: revealBid ───────────────────────────────────────────────────
+// Carrier proves their preimage matches the on-chain commitment.
+
+export circuit revealBid(bidAmount: Uint<64>, salt: Bytes<32>): [] {
+  assert(tenderStatus == TenderStatus.revealPhase, "Tender must be in REVEAL_PHASE");
+
+  const carrierPk = disclose(derive_pk(local_secret_key()));
+
+  // Verify a commitment exists for this carrier
+  assert(carrierCommitments.member(carrierPk), "No commitment found");
+
+  // Recompute and verify the commitment matches
+  const valueBytes = bidAmount as Bytes<32>;
+  const recomputed = disclose(compute_commitment(tenderId, carrierPk, valueBytes, salt));
+  const stored = carrierCommitments.lookup(carrierPk);
+  assert(recomputed == stored, "Commitment preimage mismatch");
+
+  // Reverse auction: only update lowest if this bid beats incumbent.
+  // disclose() on the comparison makes the privacy boundary explicit:
+  // observers see whether the bid was lower, but not the exact amount
+  // unless this bidder is the winner (lowestDisclosedBid gets updated).
+  if (disclose(bidAmount < lowestDisclosedBid)) {
+    lowestDisclosedBid = disclose(bidAmount);
+    awardedCarrier = disclose(carrierPk);
+  }
+}
+
+// ─── Circuit: settleTender ────────────────────────────────────────────────
+
+export circuit settleTender(): [] {
+  assert(tenderStatus == TenderStatus.revealPhase, "Tender must be in REVEAL_PHASE");
+  tenderStatus = TenderStatus.settled;
+}
+
+// ─── Circuit: cancelTender ────────────────────────────────────────────────
+
+export circuit cancelTender(): [] {
+  assert(
+    tenderStatus != TenderStatus.settled && tenderStatus != TenderStatus.cancelled,
+    "Tender is already settled or cancelled"
+  );
+  const caller = derive_pk(local_secret_key());
+  assert(disclose(caller == shipperPk), "Only the shipper can cancel");
+  tenderStatus = TenderStatus.cancelled;
+}
