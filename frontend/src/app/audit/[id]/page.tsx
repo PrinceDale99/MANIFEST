@@ -92,7 +92,7 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Audit Trail
+          Back to Verify Auctions
         </a>
 
         <div className="flex items-center gap-4">
@@ -109,14 +109,14 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
         </div>
 
         <p className="mt-3 text-sm text-zinc-400">
-          Publicly verifiable cryptographic proof that this tender was conducted fairly.
+          Proof that this auction was fair. All bids and results are on the blockchain.
         </p>
       </div>
 
       {/* Tender Overview */}
       <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-          Tender Overview
+          Auction Summary
         </h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div>
@@ -124,7 +124,7 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
             <p className="font-mono text-sm text-white">{audit?.shipper || '—'}</p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500">Carriers</p>
+            <p className="text-xs text-zinc-500">Bidders</p>
             <p className="text-sm text-white">{audit?.carrierCommitments.length || 0}</p>
           </div>
           <div>
@@ -132,7 +132,7 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
             <p className="font-mono text-xs text-white break-all">{audit?.contractAddress || '—'}</p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500">Load Hash</p>
+            <p className="text-xs text-zinc-500">Job Hash</p>
             <p className="font-mono text-xs text-white break-all">{audit?.loadHash || '—'}</p>
           </div>
         </div>
@@ -141,7 +141,7 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
       {/* Commitment Timeline */}
       <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
         <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-          Sealed Bid Commitments
+          Private Bids
         </h2>
 
         <div className="space-y-4">
@@ -183,7 +183,7 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
                   </div>
                 ) : (
                   <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500">
-                    Sealed
+                    Private
                   </span>
                 )}
               </div>
@@ -196,20 +196,20 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
       {audit?.winner && (
         <div className="rounded-xl border border-emerald-900/50 bg-emerald-900/10 p-6">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-emerald-400">
-            🏆 Awarded Carrier
+            🏆 Winner
           </h2>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-mono text-sm text-white">{audit.winner}</p>
               <p className="mt-1 text-xs text-zinc-400">
-                Lowest valid bid wins (reverse auction)
+                Lowest bid won the auction
               </p>
             </div>
             <div className="text-right">
               <p className="font-mono text-2xl font-bold text-emerald-400">
                 ${((audit.lowestBid || 0) / 100).toFixed(2)}/mi
               </p>
-              <p className="text-xs text-zinc-500">Winning rate per mile</p>
+              <p className="text-xs text-zinc-500">per mile</p>
             </div>
           </div>
         </div>
@@ -218,8 +218,8 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
       {/* Verification Notice */}
       <div className="mt-6 rounded-xl border border-cyan-900/50 bg-cyan-900/10 p-4 text-center">
         <p className="text-xs text-cyan-400">
-          🔍 All proofs in this audit trail are cryptographically verifiable on the Midnight ledger.
-          The sealed-bid mechanism ensures no carrier could see competitors' bids during the bidding phase.
+          🔍 All proofs are verifiable on the Midnight blockchain.
+          No carrier could see other carriers' bids during the auction.
         </p>
       </div>
     </div>
