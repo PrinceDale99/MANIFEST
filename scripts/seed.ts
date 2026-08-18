@@ -53,9 +53,14 @@ const DEMO_TENDERS = [
   },
 ]
 
+const NETWORK = process.argv.includes('--network')
+  ? process.argv[process.argv.indexOf('--network') + 1]
+  : 'preview'
+
 async function main() {
   console.log('═══════════════════════════════════════════════')
   console.log(' Manifest — Freight Load Seeder')
+  console.log(` Network: ${NETWORK}`)
   console.log(` Seeding ${DEMO_TENDERS.length} demo tenders`)
   console.log('═══════════════════════════════════════════════\n')
 

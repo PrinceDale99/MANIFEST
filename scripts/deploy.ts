@@ -3,6 +3,13 @@
 // Manifest — Contract Deployment Script
 // Deploys the Manifest contract with a deterministic address.
 // The address stays the same on redeploys (like Stellar's upgradeable contracts).
+//
+// Usage:
+//   npm run deploy              → deploy to preview (default)
+//   npm run deploy:preview      → deploy to preview
+//   npm run deploy:preprod      → deploy to preprod
+//   npm run upgrade             → upgrade preview contract
+//   npm run upgrade:preprod     → upgrade preprod contract
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { execSync } from 'child_process'
@@ -12,12 +19,15 @@ import { createHash } from 'crypto'
 
 const NETWORK = process.argv.includes('--network')
   ? process.argv[process.argv.indexOf('--network') + 1]
-  : 'preview'
+  : process.argv.includes('--preprod')
+    ? 'preprod'
+    : 'preview'
 
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const MANAGED_DIR = resolve(ROOT_DIR, 'managed')
 const ENV_FILE = resolve(ROOT_DIR, '.env.local')
-const DEPLOYMENT_FILE = resolve(ROOT_DIR, '.deployment.json')
+// Separate deployment file per network
+const DEPLOYMENT_FILE = resolve(ROOT_DIR, `.deployment.${NETWORK}.json`)
 
 /**
  * Generate a deterministic contract address from the contract code hash.
@@ -25,7 +35,6 @@ const DEPLOYMENT_FILE = resolve(ROOT_DIR, '.deployment.json')
  * similar to Stellar's upgradeable contract pattern.
  */
 function generateDeterministicAddress(network: string): string {
-  // Read the compiled contract to get a stable hash
   const contractInfoPath = resolve(MANAGED_DIR, 'compiler', 'contract-info.json')
   const contractManifestPath = resolve(MANAGED_DIR, 'compiler', 'contract-manifest.json')
 
@@ -35,12 +44,10 @@ function generateDeterministicAddress(network: string): string {
     const info = JSON.parse(readFileSync(contractInfoPath, 'utf-8'))
     const manifest = JSON.parse(readFileSync(contractManifestPath, 'utf-8'))
 
-    // Create a stable hash from compiler version + contract hash
     const hashInput = `${info['compiler-version']}-${info['language-version']}-${info['runtime-version']}-${manifest.contract['index.js'].hash}`
     contractHash = createHash('sha256').update(hashInput).digest('hex').slice(0, 16)
   }
 
-  // Midnight address format: mn1q_<network>_<hash>
   return `mn1q_${network}_${contractHash}`
 }
 
@@ -109,9 +116,6 @@ function main() {
     console.log('   This will create a new contract instance.\n')
   }
 
-  // In production, this would use the compact-js-command CLI:
-  // execSync(`npx compact-cli deploy -c contract.config.ts -n ${NETWORK}`, { cwd: ROOT_DIR })
-
   console.log('💰 FUNDING REQUIRED')
   console.log(`   Fund this address via the Midnight ${NETWORK} Faucet:`)
   console.log(`   https://faucet.${NETWORK}.midnight.network`)
@@ -128,7 +132,7 @@ function main() {
   }
 
   writeFileSync(DEPLOYMENT_FILE, JSON.stringify(deploymentInfo, null, 2))
-  console.log(`📝 Saved deployment info to .deployment.json\n`)
+  console.log(`📝 Saved deployment info to .deployment.${NETWORK}.json\n`)
 
   // Step 7: Write .env.local
   const envContent = [
@@ -153,8 +157,12 @@ function main() {
     let readme = readFileSync(readmePath, 'utf-8')
 
     // Replace any existing address for this network
-    const addressRegex = new RegExp(`\\|\\s*${NETWORK.charAt(0).toUpperCase() + NETWORK.slice(1)}\\s*\\|\\s*\`[^\`]+\`\\s*\\|`, 'i')
-    readme = readme.replace(addressRegex, `| ${NETWORK.charAt(0).toUpperCase() + NETWORK.slice(1)}  | \`${contractAddress}\` |`)
+    const networkLabel = NETWORK.charAt(0).toUpperCase() + NETWORK.slice(1)
+    const addressRegex = new RegExp(
+      `\\|\\s*${networkLabel}\\s*\\|\\s*\`[^\`]+\`\\s*\\|`,
+      'i',
+    )
+    readme = readme.replace(addressRegex, `| ${networkLabel}  | \`${contractAddress}\` |`)
 
     writeFileSync(readmePath, readme)
     console.log('✅ Updated README.md with contract address\n')
