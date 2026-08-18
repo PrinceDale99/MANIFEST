@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import CryptographicProofBadge from '@/components/CryptographicProofBadge'
+import StatusBadge from '@/components/ui/StatusBadge'
+import LaneDisplay from '@/components/ui/LaneDisplay'
 import type { Tender } from '@/types/manifest'
-import { TenderStatus, TENDER_STATUS_CONFIG } from '@/types/manifest'
+import { TenderStatus } from '@/types/manifest'
 
 interface AuditRecord {
   tenderId: string
@@ -22,17 +24,12 @@ interface AuditRecord {
   contractAddress: string
 }
 
-export default function AuditPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default function AuditDetailPage({ params }: { params: { id: string } }) {
   const [tender, setTender] = useState<Tender | null>(null)
   const [audit, setAudit] = useState<AuditRecord | null>(null)
 
   useEffect(() => {
     // In production: fetch from indexer/proof server
-    // Demo data:
     setTender({
       tenderId: params.id,
       shipper: '0x8f2a...c3d1',
@@ -83,102 +80,75 @@ export default function AuditPage({
       winner: '0x9e1d...f4a8',
       lowestBid: 245,
       settledAt: new Date().toISOString(),
-      contractAddress: 'mn1q...settled',
+      contractAddress: 'mn1q_preview_msym32de',
     })
   }, [params.id])
-
-  const statusConfig = tender
-    ? TENDER_STATUS_CONFIG[tender.status]
-    : null
 
   return (
     <div className="mx-auto max-w-4xl">
       {/* Header */}
       <div className="mb-8">
-        <div className="mb-4 flex items-center gap-3">
-          <a
-            href="/"
-            className="text-sm text-zinc-500 transition-colors hover:text-zinc-300"
-          >
-            ← Marketplace
-          </a>
-          <span className="rounded-full bg-indigo-900/50 px-2.5 py-1 text-[11px] font-semibold text-indigo-400">
-            AUDIT TRAIL
-          </span>
+        <a href="/audit" className="mb-4 inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Audit Trail
+        </a>
+
+        <div className="flex items-center gap-4">
+          <StatusBadge status={TenderStatus.SETTLED} size="md" />
+          <span className="font-mono text-sm text-zinc-500">#{params.id.slice(0, 12)}...</span>
         </div>
-        <h1 className="mb-2 text-2xl font-bold text-white">
-          Tender Proof Audit
-        </h1>
-        <p className="text-sm text-zinc-400">
-          Publicly verifiable cryptographic proof that this tender was
-          conducted fairly. All commitments and reveals are on-chain.
+
+        <div className="mt-4">
+          <LaneDisplay
+            origin={tender?.loadSpec?.origin || '—'}
+            destination={tender?.loadSpec?.destination || '—'}
+            size="lg"
+          />
+        </div>
+
+        <p className="mt-3 text-sm text-zinc-400">
+          Publicly verifiable cryptographic proof that this tender was conducted fairly.
         </p>
       </div>
 
       {/* Tender Overview */}
       <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-            Tender Overview
-          </h2>
-          {statusConfig && (
-            <span
-              className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase ${statusConfig.bgColor} ${statusConfig.color}`}
-            >
-              {statusConfig.label}
-            </span>
-          )}
-        </div>
-
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          Tender Overview
+        </h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div>
-            <p className="text-xs text-zinc-500">Tender ID</p>
-            <p className="font-mono text-sm text-white">
-              #{params.id.slice(0, 12)}...
-            </p>
-          </div>
-          <div>
             <p className="text-xs text-zinc-500">Shipper</p>
-            <p className="font-mono text-sm text-white">
-              {audit?.shipper || '—'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-zinc-500">Lane</p>
-            <p className="text-sm text-white">
-              {tender?.loadSpec?.origin} → {tender?.loadSpec?.destination}
-            </p>
+            <p className="font-mono text-sm text-white">{audit?.shipper || '—'}</p>
           </div>
           <div>
             <p className="text-xs text-zinc-500">Carriers</p>
-            <p className="text-sm text-white">
-              {audit?.carrierCommitments.length || 0}
-            </p>
+            <p className="text-sm text-white">{audit?.carrierCommitments.length || 0}</p>
           </div>
-        </div>
-
-        {/* Load Hash */}
-        <div className="mt-4 rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
-          <p className="mb-1 text-xs text-zinc-500">
-            Load Specification Hash (SHA-256)
-          </p>
-          <p className="font-mono text-xs text-zinc-300 break-all">
-            {audit?.loadHash || '—'}
-          </p>
+          <div>
+            <p className="text-xs text-zinc-500">Contract</p>
+            <p className="font-mono text-xs text-white break-all">{audit?.contractAddress || '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-zinc-500">Load Hash</p>
+            <p className="font-mono text-xs text-white break-all">{audit?.loadHash || '—'}</p>
+          </div>
         </div>
       </div>
 
       {/* Commitment Timeline */}
       <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+        <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider text-zinc-400">
           Sealed Bid Commitments
         </h2>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {audit?.carrierCommitments.map((commitment, index) => (
             <div
               key={commitment.carrierPk}
-              className="flex items-center gap-4 rounded-lg border border-zinc-700 bg-zinc-800/30 p-4"
+              className="relative flex items-start gap-4 rounded-lg border border-zinc-700 bg-zinc-800/30 p-4"
             >
               {/* Step Number */}
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-bold text-zinc-400">
@@ -230,9 +200,7 @@ export default function AuditPage({
           </h2>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-mono text-sm text-white">
-                {audit.winner}
-              </p>
+              <p className="font-mono text-sm text-white">{audit.winner}</p>
               <p className="mt-1 text-xs text-zinc-400">
                 Lowest valid bid wins (reverse auction)
               </p>
@@ -241,9 +209,7 @@ export default function AuditPage({
               <p className="font-mono text-2xl font-bold text-emerald-400">
                 ${((audit.lowestBid || 0) / 100).toFixed(2)}/mi
               </p>
-              <p className="text-xs text-zinc-500">
-                Winning rate per mile
-              </p>
+              <p className="text-xs text-zinc-500">Winning rate per mile</p>
             </div>
           </div>
         </div>
@@ -252,9 +218,8 @@ export default function AuditPage({
       {/* Verification Notice */}
       <div className="mt-6 rounded-xl border border-cyan-900/50 bg-cyan-900/10 p-4 text-center">
         <p className="text-xs text-cyan-400">
-          🔍 All proofs in this audit trail are cryptographically verifiable on
-          the Midnight ledger. The sealed-bid mechanism ensures no carrier
-          could see competitors' bids during the bidding phase.
+          🔍 All proofs in this audit trail are cryptographically verifiable on the Midnight ledger.
+          The sealed-bid mechanism ensures no carrier could see competitors' bids during the bidding phase.
         </p>
       </div>
     </div>

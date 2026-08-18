@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import type { Tender } from '@/types/manifest'
-import { TenderStatus, TENDER_STATUS_CONFIG } from '@/types/manifest'
+import { TenderStatus } from '@/types/manifest'
+import StatusBadge from '@/components/ui/StatusBadge'
+import LaneDisplay from '@/components/ui/LaneDisplay'
 import ProofProgress from '@/components/ProofProgress'
 import CryptographicProofBadge from '@/components/CryptographicProofBadge'
 import { ProofStage } from '@/types/manifest'
@@ -11,6 +13,7 @@ import { generateBidCommitment } from '@/lib/crypto/commitment'
 import { getWalletAddress } from '@/lib/midnight/client'
 
 interface BidState {
+  step: number
   bidAmount: string
   salt: string
   commitmentHash: string
@@ -20,14 +23,18 @@ interface BidState {
   proofHash: string | null
 }
 
-export default function CarrierBiddingPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+const BID_STEPS = [
+  { label: 'Configure Bid', description: 'Set amount and salt' },
+  { label: 'Generate Commitment', description: 'Create sealed hash' },
+  { label: 'Submit to Chain', description: 'ZK proof generation' },
+  { label: 'Reveal & Verify', description: 'Prove preimage' },
+]
+
+export default function CarrierTenderDetailPage({ params }: { params: { id: string } }) {
   const [tender, setTender] = useState<Tender | null>(null)
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
   const [bid, setBid] = useState<BidState>({
+    step: 0,
     bidAmount: '',
     salt: '',
     commitmentHash: '',
@@ -38,11 +45,25 @@ export default function CarrierBiddingPage({
   })
 
   useEffect(() => {
-    // Fetch tender details
-    fetch(`/api/tenders/${params.id}`)
-      .then((r) => r.json())
-      .then(setTender)
-      .catch(console.error)
+    // In production: fetch tender details from API
+    setTender({
+      tenderId: params.id,
+      shipper: '0x8f2a...c3d1',
+      loadHash: '0x4b8c...e7d2',
+      loadSpec: {
+        origin: 'Chicago, IL',
+        destination: 'Dallas, TX',
+        equipmentType: 'DRY_VAN' as any,
+        weightLbs: 42000,
+        description: 'Non-hazardous consumer goods',
+      },
+      status: TenderStatus.BIDDING_OPEN,
+      lowestDisclosedBid: 0xFFFFFFFFFFFFFFFF,
+      carrierCount: 3,
+      biddingDeadline: 1000,
+      revealDeadline: 1100,
+      createdAt: new Date(),
+    })
 
     getWalletAddress().then(setWalletAddress)
   }, [params.id])
@@ -66,7 +87,7 @@ export default function CarrierBiddingPage({
         bidAmount: BigInt(Math.round(parseFloat(bid.bidAmount) * 100)),
         salt: bid.salt,
       })
-      setBid((prev) => ({ ...prev, commitmentHash }))
+      setBid((prev) => ({ ...prev, commitmentHash, step: 1 }))
     } catch (error) {
       console.error('Failed to generate commitment:', error)
     }
@@ -75,12 +96,12 @@ export default function CarrierBiddingPage({
   const handleSubmitCommitment = async () => {
     setBid((prev) => ({
       ...prev,
+      step: 2,
       proofStage: ProofStage.WITNESS_EVALUATION,
       proofError: null,
     }))
 
     try {
-      // Simulate proof generation stages
       await new Promise((r) => setTimeout(r, 1000))
       setBid((prev) => ({ ...prev, proofStage: ProofStage.CIRCUIT_COMPILATION }))
 
@@ -94,10 +115,8 @@ export default function CarrierBiddingPage({
       setBid((prev) => ({
         ...prev,
         proofStage: ProofStage.COMPLETE,
-        commitmentHash: bid.commitmentHash || 'simulated',
+        step: 2,
       }))
-
-      console.log('Commitment submitted:', bid.commitmentHash)
     } catch (error) {
       setBid((prev) => ({
         ...prev,
@@ -110,12 +129,12 @@ export default function CarrierBiddingPage({
   const handleRevealBid = async () => {
     setBid((prev) => ({
       ...prev,
+      step: 3,
       proofStage: ProofStage.WITNESS_EVALUATION,
       proofError: null,
     }))
 
     try {
-      // Simulate reveal proof generation
       await new Promise((r) => setTimeout(r, 1500))
       setBid((prev) => ({ ...prev, proofStage: ProofStage.CIRCUIT_COMPILATION }))
 
@@ -127,13 +146,16 @@ export default function CarrierBiddingPage({
 
       await new Promise((r) => setTimeout(r, 1000))
 
-      const proofHash = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
+      const proofHash = '0x' + Array.from({ length: 64 }, () =>
+        Math.floor(Math.random() * 16).toString(16),
+      ).join('')
 
       setBid((prev) => ({
         ...prev,
         proofStage: ProofStage.COMPLETE,
         revealed: true,
         proofHash,
+        step: 3,
       }))
     } catch (error) {
       setBid((prev) => ({
@@ -144,224 +166,326 @@ export default function CarrierBiddingPage({
     }
   }
 
-  const statusConfig = tender
-    ? TENDER_STATUS_CONFIG[tender.status]
-    : null
+  if (!tender) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-2 border-zinc-600 border-t-emerald-400" />
+          <p className="text-sm text-zinc-400">Loading tender...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-4xl">
       {/* Header */}
       <div className="mb-8">
-        <div className="mb-4 flex items-center gap-3">
-          <a
-            href="/"
-            className="text-sm text-zinc-500 transition-colors hover:text-zinc-300"
-          >
-            ← Marketplace
-          </a>
-          {statusConfig && (
-            <span
-              className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase ${statusConfig.bgColor} ${statusConfig.color}`}
-            >
-              {statusConfig.label}
-            </span>
-          )}
+        <a href="/carrier" className="mb-4 inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Tenders
+        </a>
+
+        <div className="flex items-center gap-4">
+          <StatusBadge status={tender.status} size="md" />
+          <LaneDisplay
+            origin={tender.loadSpec?.origin || '—'}
+            destination={tender.loadSpec?.destination || '—'}
+            size="lg"
+          />
         </div>
-        <h1 className="mb-2 text-2xl font-bold text-white">
-          Sealed Bid — {params.id.slice(0, 12)}...
-        </h1>
-        <p className="text-sm text-zinc-400">
-          Your bid amount and salt are private witnesses. Only the
-          commitment hash is stored on-chain.
+
+        <p className="mt-3 text-sm text-zinc-400">
+          Your bid amount and salt are private witnesses. Only the commitment hash is stored on-chain.
         </p>
       </div>
 
+      {/* Bid Progress Steps */}
+      <nav className="mb-8">
+        <ol className="flex items-center">
+          {BID_STEPS.map((step, index) => {
+            const isComplete = index < bid.step
+            const isCurrent = index === bid.step
+            return (
+              <li key={step.label} className={`relative flex items-center ${index < BID_STEPS.length - 1 ? 'flex-1' : ''}`}>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                      isComplete
+                        ? 'bg-emerald-600 text-white'
+                        : isCurrent
+                          ? 'bg-white text-black'
+                          : 'bg-zinc-800 text-zinc-500'
+                    }`}
+                  >
+                    {isComplete ? '✓' : index + 1}
+                  </div>
+                  <div className="hidden sm:block">
+                    <p className={`text-sm font-medium ${isCurrent ? 'text-white' : isComplete ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                      {step.label}
+                    </p>
+                    {isCurrent && <p className="text-xs text-zinc-400">{step.description}</p>}
+                  </div>
+                </div>
+                {index < BID_STEPS.length - 1 && (
+                  <div className={`ml-3 h-px flex-1 ${isComplete ? 'bg-emerald-600' : 'bg-zinc-800'}`} />
+                )}
+              </li>
+            )
+          })}
+        </ol>
+      </nav>
+
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left: Bid Form */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Bid Input */}
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-              Bid Configuration
-            </h2>
+        <div className="lg:col-span-2 space-y-6">
+          {/* Step 0: Configure Bid */}
+          {bid.step === 0 && (
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                Configure Your Bid
+              </h2>
 
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm text-zinc-300">
-                  Bid Amount (cents per mile)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder="e.g. 275 = $2.75/mi"
-                    value={bid.bidAmount}
-                    onChange={(e) =>
-                      setBid((prev) => ({
-                        ...prev,
-                        bidAmount: e.target.value,
-                      }))
-                    }
-                    className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 font-mono text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <button
-                    onClick={handleDeriveSalt}
-                    className="rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
-                  >
-                    Derive Salt
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm text-zinc-300">
-                  Salt (auto-derived or manual)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Click 'Derive Salt' or paste manually"
-                    value={bid.salt}
-                    onChange={(e) =>
-                      setBid((prev) => ({ ...prev, salt: e.target.value }))
-                    }
-                    className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 font-mono text-xs text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
-                  />
-                  {bid.salt && (
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-sm text-zinc-300">
+                    Bid Amount (cents per mile)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="e.g. 275 = $2.75/mi"
+                      value={bid.bidAmount}
+                      onChange={(e) => setBid((prev) => ({ ...prev, bidAmount: e.target.value }))}
+                      className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 font-mono text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
+                    />
                     <button
-                      onClick={() =>
-                        downloadKeyfile(
-                          params.id,
-                          bid.salt,
-                          walletAddress || 'unknown',
-                        )
-                      }
-                      className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs text-zinc-400 transition-colors hover:bg-zinc-700"
+                      onClick={handleDeriveSalt}
+                      className="rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
                     >
-                      💾 Backup
+                      Derive Salt
                     </button>
-                  )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Commitment Hash */}
-              {bid.commitmentHash && (
-                <div className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
-                  <p className="mb-1 text-xs text-zinc-400">
-                    Commitment Hash
-                  </p>
-                  <p className="font-mono text-xs text-emerald-400 break-all">
-                    {bid.commitmentHash}
-                  </p>
+                <div>
+                  <label className="mb-1.5 block text-sm text-zinc-300">
+                    Salt (auto-derived or manual)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Click 'Derive Salt' or paste manually"
+                      value={bid.salt}
+                      onChange={(e) => setBid((prev) => ({ ...prev, salt: e.target.value }))}
+                      className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 font-mono text-xs text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
+                    />
+                    {bid.salt && (
+                      <button
+                        onClick={() =>
+                          downloadKeyfile(params.id, bid.salt, walletAddress || 'unknown')
+                        }
+                        className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-xs text-zinc-400 transition-colors hover:bg-zinc-700"
+                      >
+                        💾 Backup
+                      </button>
+                    )}
+                  </div>
                 </div>
-              )}
 
-              {/* Action Buttons */}
-              <div className="flex gap-3">
                 <button
                   onClick={handleGenerateCommitment}
                   disabled={!bid.bidAmount || !bid.salt}
-                  className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-700 disabled:opacity-50"
+                  className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
                 >
-                  Generate Commitment
+                  Generate Commitment →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 1: Review Commitment */}
+          {bid.step === 1 && (
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                Commitment Generated
+              </h2>
+
+              <div className="mb-4 rounded-lg border border-zinc-700 bg-zinc-800/50 p-4">
+                <p className="mb-1 text-xs text-zinc-500">Your Sealed Bid</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Amount</span>
+                    <span className="font-mono text-white">
+                      ${(parseFloat(bid.bidAmount)).toFixed(2)}/mi
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Commitment Hash</span>
+                    <span className="font-mono text-xs text-emerald-400 break-all">
+                      {bid.commitmentHash.slice(0, 20)}...{bid.commitmentHash.slice(-8)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="mb-4 text-xs text-zinc-500">
+                This hash is what gets stored on-chain. Your actual bid amount remains private.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setBid((prev) => ({ ...prev, step: 0 }))}
+                  className="flex-1 rounded-lg border border-zinc-700 px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800"
+                >
+                  ← Edit Bid
                 </button>
                 <button
                   onClick={handleSubmitCommitment}
-                  disabled={!bid.commitmentHash}
-                  className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                  className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
                 >
-                  Submit Sealed Bid
+                  Submit Sealed Bid →
                 </button>
               </div>
-
-              {/* Reveal Button */}
-              {tender?.status === TenderStatus.REVEAL_PHASE &&
-                bid.proofStage === ProofStage.COMPLETE &&
-                !bid.revealed && (
-                  <button
-                    onClick={handleRevealBid}
-                    className="w-full rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-amber-500"
-                  >
-                    ⚡ Reveal Bid (Prove Commitment)
-                  </button>
-                )}
             </div>
-          </div>
+          )}
 
-          {/* Tender Details */}
-          {tender && (
+          {/* Step 2: Proof Generation */}
+          {bid.step === 2 && (
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-                Tender Details
+                Generating ZK Proof
               </h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-zinc-500">Origin</p>
-                  <p className="font-mono text-sm text-white">
-                    {tender.loadSpec?.origin || '—'}
-                  </p>
+              <ProofProgress currentStage={bid.proofStage} error={bid.proofError} />
+
+              {bid.proofStage === ProofStage.COMPLETE && (
+                <div className="mt-4">
+                  {tender.status === TenderStatus.REVEAL_PHASE ? (
+                    <button
+                      onClick={handleRevealBid}
+                      className="w-full rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-amber-500"
+                    >
+                      ⚡ Reveal Bid (Prove Commitment)
+                    </button>
+                  ) : (
+                    <p className="text-center text-sm text-zinc-400">
+                      Bid submitted! Waiting for reveal phase...
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 3: Revealed */}
+          {bid.step === 3 && bid.revealed && (
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                Bid Revealed & Verified
+              </h2>
+
+              <div className="mb-4 flex items-center gap-3 rounded-lg border border-emerald-900/50 bg-emerald-900/10 p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-900/50">
+                  <svg className="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Destination</p>
-                  <p className="font-mono text-sm text-white">
-                    {tender.loadSpec?.destination || '—'}
-                  </p>
+                  <p className="text-sm font-medium text-emerald-400">Successfully Revealed</p>
+                  <p className="text-xs text-zinc-400">Your bid has been verified on-chain</p>
                 </div>
-                <div>
-                  <p className="text-xs text-zinc-500">Equipment</p>
-                  <p className="text-sm text-white">
-                    {tender.loadSpec?.equipmentType?.replace('_', ' ') || '—'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-zinc-500">Weight</p>
-                  <p className="font-mono text-sm text-white">
-                    {tender.loadSpec?.weightLbs
-                      ? `${tender.loadSpec.weightLbs.toLocaleString()} lbs`
-                      : '—'}
-                  </p>
-                </div>
+              </div>
+
+              <CryptographicProofBadge
+                proofHash={bid.proofHash || ''}
+                verified={true}
+                explorerUrl={`https://explorer.midnight.network/proof/${bid.proofHash}`}
+              />
+
+              <p className="mt-4 text-xs text-zinc-500">
+                Your bid was revealed and verified. The ZK proof confirms your commitment without
+                exposing the exact amount to other carriers.
+              </p>
+
+              <div className="mt-4 flex gap-3">
+                <a
+                  href="/carrier"
+                  className="flex-1 rounded-lg border border-zinc-700 px-4 py-2.5 text-center text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800"
+                >
+                  Browse More Tenders
+                </a>
+                <a
+                  href={`/audit/${params.id}`}
+                  className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700"
+                >
+                  🔍 View Audit Trail
+                </a>
               </div>
             </div>
           )}
+
+          {/* Tender Details */}
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+              Tender Details
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-zinc-500">Equipment</p>
+                <p className="text-sm text-white">
+                  {tender.loadSpec?.equipmentType?.replace('_', ' ') || '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-zinc-500">Weight</p>
+                <p className="font-mono text-sm text-white">
+                  {tender.loadSpec?.weightLbs?.toLocaleString() || '—'} lbs
+                </p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-xs text-zinc-500">Description</p>
+                <p className="text-sm text-white">{tender.loadSpec?.description || '—'}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Right: Proof Progress */}
+        {/* Right: Privacy Info */}
         <div className="space-y-4">
-          <ProofProgress
-            currentStage={bid.proofStage}
-            error={bid.proofError}
-          />
-
-          {/* Verification Badge */}
-          {bid.revealed && bid.proofHash && (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <h3 className="mb-3 text-sm font-semibold text-white">
-                Bid Verified
-              </h3>
-              <CryptographicProofBadge
-                proofHash={bid.proofHash}
-                verified={true}
-                explorerUrl={`https:// explorer.midnight.network/proof/${bid.proofHash}`}
-              />
-              <p className="mt-3 text-xs text-zinc-500">
-                Your bid has been revealed and verified on-chain. The ZK proof
-                confirms your commitment without exposing the exact amount
-                to other carriers.
-              </p>
-            </div>
-          )}
-
-          {/* Privacy Notice */}
           <div className="rounded-xl border border-cyan-900/50 bg-cyan-900/10 p-4">
             <h3 className="mb-2 text-xs font-semibold text-cyan-400">
               🔒 Privacy Guarantee
             </h3>
-            <ul className="space-y-1 text-[11px] text-zinc-400">
+            <ul className="space-y-1.5 text-[11px] text-zinc-400">
               <li>• Your bid amount is a private witness</li>
               <li>• Only the commitment hash is on-chain</li>
               <li>• Reveal proves preimage without leaking salt</li>
               <li>• Rivals cannot see your exact quote</li>
             </ul>
+          </div>
+
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+            <h3 className="mb-2 text-xs font-semibold text-white">How It Works</h3>
+            <ol className="space-y-2 text-[11px] text-zinc-400">
+              <li className="flex gap-2">
+                <span className="font-bold text-emerald-400">1.</span>
+                <span>Set your bid amount and derive a salt</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-bold text-emerald-400">2.</span>
+                <span>Generate a commitment hash (stored on-chain)</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-bold text-emerald-400">3.</span>
+                <span>During reveal, prove your commitment matches</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="font-bold text-emerald-400">4.</span>
+                <span>Lowest valid bid wins the freight contract</span>
+              </li>
+            </ol>
           </div>
         </div>
       </div>
