@@ -2,14 +2,14 @@
 
 const footerLinks = {
   Product: [
-    { label: 'For Shippers', href: '/shipper' },
-    { label: 'For Carriers', href: '/carrier' },
-    { label: 'Audit Trail', href: '/audit' },
+    { label: 'Post a Tender', href: '/shipper' },
+    { label: 'Find Auctions', href: '/carrier' },
+    { label: 'Verify Auctions', href: '/audit' },
     { label: 'Documentation', href: '#' },
   ],
   Resources: [
     { label: 'How It Works', href: '#' },
-    { label: 'API Reference', href: '#' },
+    { label: 'API Docs', href: '#' },
     { label: 'Smart Contract', href: '#' },
     { label: 'Whitepaper', href: '#' },
   ],
@@ -20,8 +20,8 @@ const footerLinks = {
     { label: 'Blog', href: '#' },
   ],
   Legal: [
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
+    { label: 'Privacy', href: '#' },
+    { label: 'Terms', href: '#' },
     { label: 'License', href: '#' },
   ],
 }
@@ -40,7 +40,7 @@ export default function Footer() {
               <span className="font-mono text-lg font-semibold text-white">Manifest</span>
             </div>
             <p className="text-sm text-zinc-500">
-              Zero-knowledge freight auctions. Private bids. Fair results.
+              Private freight auctions. Fair results. No middlemen.
             </p>
           </div>
 
@@ -67,7 +67,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-zinc-800 pt-8 sm:flex-row">
           <p className="text-xs text-zinc-500">
-            © 2026 Manifest Protocol. Built on Midnight Network.
+            © 2026 Manifest. Built on Midnight.
           </p>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-2 text-xs text-zinc-500">
