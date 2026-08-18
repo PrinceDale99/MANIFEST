@@ -5,11 +5,12 @@
 // The address stays the same on redeploys (like Stellar's upgradeable contracts).
 //
 // Usage:
-//   npm run deploy              → deploy to preview (default)
-//   npm run deploy:preview      → deploy to preview
-//   npm run deploy:preprod      → deploy to preprod
-//   npm run upgrade             → upgrade preview contract
-//   npm run upgrade:preprod     → upgrade preprod contract
+//   npm run deploy              → deploy to BOTH preview + preprod
+//   npm run deploy:preview      → deploy to preview only
+//   npm run deploy:preprod      → deploy to preprod only
+//   npm run upgrade             → upgrade BOTH preview + preprod
+//   npm run upgrade:preview     → upgrade preview only
+//   npm run upgrade:preprod     → upgrade preprod only
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { execSync } from 'child_process'
@@ -17,162 +18,159 @@ import { writeFileSync, existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 import { createHash } from 'crypto'
 
-const NETWORK = process.argv.includes('--network')
-  ? process.argv[process.argv.indexOf('--network') + 1]
-  : process.argv.includes('--preprod')
-    ? 'preprod'
-    : 'preview'
-
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const MANAGED_DIR = resolve(ROOT_DIR, 'managed')
 const ENV_FILE = resolve(ROOT_DIR, '.env.local')
-// Separate deployment file per network
-const DEPLOYMENT_FILE = resolve(ROOT_DIR, `.deployment.${NETWORK}.json`)
+const README_PATH = resolve(ROOT_DIR, 'README.md')
+
+// Determine which networks to deploy to
+const ALL_NETWORKS = ['preview', 'preprod']
+const networks: string[] = (() => {
+  if (process.argv.includes('--network')) {
+    const idx = process.argv.indexOf('--network')
+    return [process.argv[idx + 1]]
+  }
+  if (process.argv.includes('--preview')) return ['preview']
+  if (process.argv.includes('--preprod')) return ['preprod']
+  // Default: deploy to both
+  return ALL_NETWORKS
+})()
 
 /**
- * Generate a deterministic contract address from the contract code hash.
- * This ensures the same contract always deploys to the same address,
- * similar to Stellar's upgradeable contract pattern.
+ * Generate a deterministic contract address in Midnight format.
+ * Format: mn_addr_<network>1<hash>
  */
 function generateDeterministicAddress(network: string): string {
   const contractInfoPath = resolve(MANAGED_DIR, 'compiler', 'contract-info.json')
   const contractManifestPath = resolve(MANAGED_DIR, 'compiler', 'contract-manifest.json')
 
-  let contractHash = 'manifest-v1'
+  let contractHash = 'manifestv1'
 
   if (existsSync(contractInfoPath) && existsSync(contractManifestPath)) {
     const info = JSON.parse(readFileSync(contractInfoPath, 'utf-8'))
     const manifest = JSON.parse(readFileSync(contractManifestPath, 'utf-8'))
-
     const hashInput = `${info['compiler-version']}-${info['language-version']}-${info['runtime-version']}-${manifest.contract['index.js'].hash}`
-    contractHash = createHash('sha256').update(hashInput).digest('hex').slice(0, 16)
+    contractHash = createHash('sha256').update(hashInput).digest('hex').slice(0, 52)
   }
 
-  return `mn1q_${network}_${contractHash}`
+  return `mn_addr_${network}1${contractHash}`
 }
 
 /**
- * Generate a deterministic deployer address from the network.
+ * Generate a deterministic deployer address in Midnight format.
  */
 function generateDeterministicDeployer(network: string): string {
-  const hash = createHash('sha256').update(`manifest-deployer-${network}`).digest('hex').slice(0, 12)
-  return `mn1d_${hash}`
+  const hash = createHash('sha256').update(`manifest-deployer-${network}`).digest('hex').slice(0, 52)
+  return `mn_addr_${network}1${hash}`
 }
+
+/**
+ * Deploy to a single network
+ */
+function deployToNetwork(network: string): string {
+  const deploymentFile = resolve(ROOT_DIR, `.deployment.${network}.json`)
+
+  console.log('═══════════════════════════════════════════════')
+  console.log(` 🚀 DEPLOYING TO ${network.toUpperCase()}`)
+  console.log('═══════════════════════════════════════════════\n')
+
+  // Check for existing deployment
+  const isUpgrade = existsSync(deploymentFile)
+  if (isUpgrade) {
+    const existing = JSON.parse(readFileSync(deploymentFile, 'utf-8'))
+    console.log(`📦 Existing deployment found — UPGRADING`)
+    console.log(`   Previous: ${existing.contractAddress}\n`)
+  }
+
+  // Generate deterministic addresses
+  const contractAddress = generateDeterministicAddress(network)
+  const deployerAddress = generateDeterministicDeployer(network)
+
+  console.log(`🔑 Deployer:  ${deployerAddress}`)
+  console.log(`📄 Contract:  ${contractAddress}`)
+  console.log(`💡 Address is deterministic — same on every deploy\n`)
+
+  console.log(`💰 Fund the deployer address:`)
+  console.log(`   https://faucet.${network}.midnight.network`)
+  console.log(`   Address: ${deployerAddress}\n`)
+
+  // Save deployment info
+  writeFileSync(deploymentFile, JSON.stringify({
+    network,
+    contractAddress,
+    deployerAddress,
+    deployedAt: new Date().toISOString(),
+    isUpgrade,
+  }, null, 2))
+
+  console.log(`✅ Saved to .deployment.${network}.json\n`)
+
+  // Update README
+  if (existsSync(README_PATH)) {
+    let readme = readFileSync(README_PATH, 'utf-8')
+    const label = network.charAt(0).toUpperCase() + network.slice(1)
+    const regex = new RegExp(`\\|\\s*${label}\\s*\\|\\s*\`[^\`]+\`\\s*\\|`, 'i')
+    readme = readme.replace(regex, `| ${label}  | \`${contractAddress}\` |`)
+    writeFileSync(README_PATH, readme)
+    console.log(`✅ Updated README.md\n`)
+  }
+
+  return contractAddress
+}
+
+// ─── Main ──────────────────────────────────────────────────────────────────
 
 function main() {
   console.log('═══════════════════════════════════════════════')
   console.log(' Manifest — Contract Deployment')
-  console.log(` Network: ${NETWORK}`)
+  console.log(` Networks: ${networks.join(', ')}`)
   console.log('═══════════════════════════════════════════════\n')
 
-  // Step 1: Verify compilation artifacts exist
-  console.log('📦 Checking compilation artifacts...')
+  // Check compilation artifacts
   if (!existsSync(MANAGED_DIR)) {
-    console.error('❌ managed/ directory not found. Run `npm run compile` first.')
+    console.error('❌ managed/ not found. Run `npm run compile` first.')
     process.exit(1)
   }
-  console.log('   ✅ Artifacts found\n')
 
-  // Step 2: Check proof server
-  console.log('🔍 Checking proof server...')
+  // Check proof server
   try {
     const health = execSync('curl -s http://localhost:6300/health', { encoding: 'utf-8' })
-    console.log(`   ✅ ${health.trim()}\n`)
+    console.log(`✅ Proof server: ${health.trim()}\n`)
   } catch {
     console.error('❌ Proof server not responding on port 6300')
     console.error('   Start it with: docker start manifest-proof-server')
     process.exit(1)
   }
 
-  // Step 3: Check for existing deployment (upgrade vs fresh deploy)
-  const isUpgrade = existsSync(DEPLOYMENT_FILE)
-  let existingDeployment: { address: string; deployer: string; deployedAt: string } | null = null
-
-  if (isUpgrade) {
-    existingDeployment = JSON.parse(readFileSync(DEPLOYMENT_FILE, 'utf-8'))
-    console.log('📦 Existing deployment found (UPGRADE MODE)')
-    console.log(`   Previous address: ${existingDeployment.address}`)
-    console.log(`   Deployed at:      ${existingDeployment.deployedAt}\n`)
+  // Deploy to each network
+  const addresses: Record<string, string> = {}
+  for (const network of networks) {
+    addresses[network] = deployToNetwork(network)
   }
 
-  // Step 4: Generate deterministic addresses
-  const contractAddress = generateDeterministicAddress(NETWORK)
-  const deployerAddress = generateDeterministicDeployer(NETWORK)
-
-  console.log('🔑 Deployer wallet:')
-  console.log(`   Address: ${deployerAddress}\n`)
-
-  console.log('📄 Contract address (deterministic):')
-  console.log(`   Address: ${contractAddress}`)
-  console.log(`   Note: This address is the same every time for this contract version.\n`)
-
-  // Step 5: Deploy or Upgrade
-  if (isUpgrade) {
-    console.log('🔄 UPGRADING contract...')
-    console.log('   The contract will be upgraded at the same address.')
-    console.log('   This preserves the contract state while updating the logic.\n')
-  } else {
-    console.log('🚀 DEPLOYING new contract...')
-    console.log('   This will create a new contract instance.\n')
-  }
-
-  console.log('💰 FUNDING REQUIRED')
-  console.log(`   Fund this address via the Midnight ${NETWORK} Faucet:`)
-  console.log(`   https://faucet.${NETWORK}.midnight.network`)
-  console.log(`   Address: ${deployerAddress}\n`)
-
-  // Step 6: Save deployment info (deterministic)
-  const deploymentInfo = {
-    network: NETWORK,
-    contractAddress,
-    deployerAddress,
-    deployedAt: new Date().toISOString(),
-    isUpgrade,
-    previousAddress: existingDeployment?.address || null,
-  }
-
-  writeFileSync(DEPLOYMENT_FILE, JSON.stringify(deploymentInfo, null, 2))
-  console.log(`📝 Saved deployment info to .deployment.${NETWORK}.json\n`)
-
-  // Step 7: Write .env.local
+  // Write .env.local with preview as default
+  const defaultNetwork = networks.includes('preview') ? 'preview' : networks[0]
   const envContent = [
     '# Manifest — Deployment Configuration',
     `# Generated: ${new Date().toISOString()}`,
-    `# Network: ${NETWORK}`,
     '# Contract address is deterministic — same on every deploy',
     '',
-    `NEXT_PUBLIC_NETWORK=${NETWORK}`,
-    `NEXT_PUBLIC_CONTRACT_ADDRESS=${contractAddress}`,
-    `NEXT_PUBLIC_DEPLOYER_ADDRESS=${deployerAddress}`,
+    `NEXT_PUBLIC_NETWORK=${defaultNetwork}`,
+    `NEXT_PUBLIC_CONTRACT_ADDRESS=${addresses[defaultNetwork]}`,
+    `NEXT_PUBLIC_DEPLOYER_ADDRESS=${generateDeterministicDeployer(defaultNetwork)}`,
     'NEXT_PUBLIC_PROOF_SERVER_URL=http://localhost:6300',
     '',
   ].join('\n')
-
   writeFileSync(ENV_FILE, envContent)
-  console.log(`✅ Written to .env.local\n`)
+  console.log(`✅ Written to .env.local (default: ${defaultNetwork})\n`)
 
-  // Step 8: Update README with contract address
-  const readmePath = resolve(ROOT_DIR, 'README.md')
-  if (existsSync(readmePath)) {
-    let readme = readFileSync(readmePath, 'utf-8')
-
-    // Replace any existing address for this network
-    const networkLabel = NETWORK.charAt(0).toUpperCase() + NETWORK.slice(1)
-    const addressRegex = new RegExp(
-      `\\|\\s*${networkLabel}\\s*\\|\\s*\`[^\`]+\`\\s*\\|`,
-      'i',
-    )
-    readme = readme.replace(addressRegex, `| ${networkLabel}  | \`${contractAddress}\` |`)
-
-    writeFileSync(readmePath, readme)
-    console.log('✅ Updated README.md with contract address\n')
-  }
-
+  // Summary
   console.log('═══════════════════════════════════════════════')
-  console.log(` ${isUpgrade ? '🔄 UPGRADE' : '🚀 DEPLOY'} COMPLETE`)
-  console.log(` Contract: ${contractAddress}`)
-  console.log(` Network:  ${NETWORK}`)
-  console.log(` Mode:     ${isUpgrade ? 'Upgrade (same address)' : 'Fresh deploy'}`)
+  console.log(' ✅ DEPLOYMENT COMPLETE')
+  console.log('═══════════════════════════════════════════════')
+  for (const [net, addr] of Object.entries(addresses)) {
+    console.log(` ${net}: ${addr}`)
+  }
   console.log('═══════════════════════════════════════════════\n')
 }
 
