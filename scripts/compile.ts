@@ -89,7 +89,14 @@ function main() {
   console.log('  ──────────────────────────────────────')
   for (const field of contractInfo.ledger) {
     const typeName = field.type['type-name']
-    const extra = field.type.length ? `<${field.type.length}>` : ''
+    let extra = ''
+    if (typeName === 'Map' && field.type.key && field.type.value) {
+      const keyType = field.type.key['type-name'] + (field.type.key.length ? `<${field.type.key.length}>` : '')
+      const valueType = field.type.value['type-name'] + (field.type.value.length ? `<${field.type.value.length}>` : '')
+      extra = `<${keyType}, ${valueType}>`
+    } else if (field.type.length) {
+      extra = `<${field.type.length}>`
+    }
     const sealed = !['tenderStatus', 'lowestDisclosedBid', 'carrierCommitments'].includes(field.name)
       ? ' (sealed)'
       : ''
