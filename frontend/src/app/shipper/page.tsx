@@ -40,9 +40,9 @@ export default function ShipperDashboardPage() {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="mb-2 text-2xl font-bold text-white">Shipper Dashboard</h1>
+          <h1 className="mb-2 text-2xl font-bold text-white">Your Tenders</h1>
           <p className="text-sm text-zinc-400">
-            Create and manage your freight tenders.
+            Create freight auctions and track bids from carriers.
           </p>
         </div>
         <a
@@ -60,15 +60,15 @@ export default function ShipperDashboardPage() {
       <div className="mb-8 grid grid-cols-3 gap-4">
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
           <p className="font-mono text-2xl font-bold text-white">{tenders.length}</p>
-          <p className="text-xs text-zinc-500">Total Tenders</p>
+          <p className="text-xs text-zinc-500">Total Posted</p>
         </div>
         <div className="rounded-xl border border-emerald-900/50 bg-emerald-900/10 p-4">
           <p className="font-mono text-2xl font-bold text-emerald-400">{activeCount}</p>
-          <p className="text-xs text-zinc-500">Active</p>
+          <p className="text-xs text-zinc-500">Collecting Bids</p>
         </div>
         <div className="rounded-xl border border-indigo-900/50 bg-indigo-900/10 p-4">
           <p className="font-mono text-2xl font-bold text-indigo-400">{settledCount}</p>
-          <p className="text-xs text-zinc-500">Settled</p>
+          <p className="text-xs text-zinc-500">Completed</p>
         </div>
       </div>
 
@@ -83,9 +83,9 @@ export default function ShipperDashboardPage() {
       ) : sortedTenders.length === 0 ? (
         <EmptyState
           icon="📦"
-          title="No Tenders Yet"
-          description="Create your first freight tender to start receiving sealed bids from carriers."
-          action={{ label: 'Create First Tender', href: '/shipper/new' }}
+          title="No Auctions Yet"
+          description="Post your first freight auction to start receiving private bids from carriers."
+          action={{ label: 'Post First Auction', href: '/shipper/new' }}
         />
       ) : (
         <div className="space-y-3">
