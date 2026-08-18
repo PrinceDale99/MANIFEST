@@ -88,15 +88,28 @@ function main() {
   console.log('  Ledger Fields (on-chain state):')
   console.log('  ──────────────────────────────────────')
   for (const field of contractInfo.ledger) {
-    const typeName = field.type['type-name']
+    let typeName: string
     let extra = ''
-    if (typeName === 'Map' && field.type.key && field.type.value) {
-      const keyType = field.type.key['type-name'] + (field.type.key.length ? `<${field.type.key.length}>` : '')
-      const valueType = field.type.value['type-name'] + (field.type.value.length ? `<${field.type.value.length}>` : '')
+
+    if (field.storage === 'Map' && field.key && field.value) {
+      // Map type: key and value are directly on the field
+      const keyType = field.key['type-name'] + (field.key.length ? `<${field.key.length}>` : '')
+      const valueType = field.value['type-name'] + (field.value.length ? `<${field.value.length}>` : '')
+      typeName = 'Map'
       extra = `<${keyType}, ${valueType}>`
-    } else if (field.type.length) {
-      extra = `<${field.type.length}>`
+    } else if (field.type) {
+      // Cell type: type is nested under field.type
+      typeName = field.type['type-name']
+      if (typeName === 'Enum') {
+        // Enum has name property
+        extra = field.type.name ? `<${field.type.name}>` : ''
+      } else if (field.type.length) {
+        extra = `<${field.type.length}>`
+      }
+    } else {
+      typeName = 'unknown'
     }
+
     const sealed = !['tenderStatus', 'lowestDisclosedBid', 'carrierCommitments'].includes(field.name)
       ? ' (sealed)'
       : ''
