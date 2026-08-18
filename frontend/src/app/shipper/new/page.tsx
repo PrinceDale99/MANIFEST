@@ -5,9 +5,9 @@ import { EquipmentType } from '@/types/manifest'
 import ProgressSteps from '@/components/ui/ProgressSteps'
 
 const STEPS = [
-  { label: 'Load Details', description: 'Origin, destination, cargo' },
-  { label: 'Bidding Config', description: 'Windows and reserve price' },
-  { label: 'Review & Deploy', description: 'Confirm and submit' },
+  { label: 'Job Details', description: 'Where and what to ship' },
+  { label: 'Auction Settings', description: 'Timing and price limits' },
+  { label: 'Review & Post', description: 'Confirm and publish' },
 ]
 
 export default function NewTenderPage() {
@@ -51,11 +51,11 @@ export default function NewTenderPage() {
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Dashboard
+          Back to Your Tenders
         </a>
-        <h1 className="mb-2 text-2xl font-bold text-white">Create Freight Tender</h1>
+        <h1 className="mb-2 text-2xl font-bold text-white">Post a Freight Auction</h1>
         <p className="text-sm text-zinc-400">
-          Define your load and bidding parameters. Carrier bids will be sealed with zero-knowledge proofs.
+          Describe what you need shipped. Carrier bids will stay private until the reveal phase.
         </p>
       </div>
 
@@ -66,7 +66,7 @@ export default function NewTenderPage() {
       {step === 0 && (
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
           <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-            Load Specifications
+            What Are You Shipping?
           </h2>
 
           <div className="space-y-4">
@@ -138,7 +138,7 @@ export default function NewTenderPage() {
               disabled={!canProceed()}
               className="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
             >
-              Next: Bidding Config
+              Next: Auction Settings
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -151,7 +151,7 @@ export default function NewTenderPage() {
       {step === 1 && (
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
           <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-            Bidding Configuration
+            Auction Settings
           </h2>
 
           <div className="space-y-4">
@@ -206,7 +206,7 @@ export default function NewTenderPage() {
               disabled={!canProceed()}
               className="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
             >
-              Review & Deploy
+              Review & Post
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -219,7 +219,7 @@ export default function NewTenderPage() {
       {step === 2 && (
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
           <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider text-zinc-400">
-            Review & Deploy
+            Review & Publish
           </h2>
 
           <div className="mb-6 space-y-3 rounded-lg border border-zinc-700 bg-zinc-800/50 p-4">
@@ -265,7 +265,7 @@ export default function NewTenderPage() {
 
           <div className="mb-6 rounded-lg border border-amber-900/50 bg-amber-900/20 p-4">
             <p className="text-sm text-amber-300">
-              ⚡ This will deploy a smart contract to the Midnight Preview network. You will need testnet NIGHT tokens.
+              ⚡ This will post your auction to the Midnight blockchain. You'll need testnet NIGHT tokens.
             </p>
           </div>
 
@@ -291,7 +291,7 @@ export default function NewTenderPage() {
                 </>
               ) : (
                 <>
-                  🚀 Deploy Tender
+                  🚀 Post Auction
                 </>
               )}
             </button>
