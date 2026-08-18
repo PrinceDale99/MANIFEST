@@ -22,7 +22,7 @@ export const TENDER_STATUS_CONFIG: Record<
     bgColor: 'bg-slate-800',
   },
   [TenderStatus.BIDDING_OPEN]: {
-    label: 'BIDDING OPEN',
+    label: 'COLLECTING BIDS',
     color: 'text-emerald-400',
     bgColor: 'bg-emerald-900/50',
   },
@@ -32,7 +32,7 @@ export const TENDER_STATUS_CONFIG: Record<
     bgColor: 'bg-amber-900/50',
   },
   [TenderStatus.SETTLED]: {
-    label: 'SETTLED',
+    label: 'COMPLETED',
     color: 'text-indigo-400',
     bgColor: 'bg-indigo-900/50',
   },
