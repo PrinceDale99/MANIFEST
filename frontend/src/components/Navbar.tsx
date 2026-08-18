@@ -32,9 +32,9 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/shipper', label: 'Shipper', icon: '📦' },
-    { href: '/carrier', label: 'Carrier', icon: '🚛' },
-    { href: '/audit', label: 'Audit', icon: '🔍' },
+    { href: '/shipper', label: 'Post Tender', icon: '📦' },
+    { href: '/carrier', label: 'Browse Tenders', icon: '🚛' },
+    { href: '/audit', label: 'Verify Auctions', icon: '🔍' },
   ]
 
   return (
