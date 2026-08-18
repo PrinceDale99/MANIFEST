@@ -71,9 +71,9 @@ export default function CarrierBidsPage() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="mb-2 text-2xl font-bold text-white">My Bids</h1>
+        <h1 className="mb-2 text-2xl font-bold text-white">Your Bids</h1>
         <p className="text-sm text-zinc-400">
-          Track your sealed bids and auction outcomes.
+          Track your private bids and see who won.
         </p>
       </div>
 
@@ -93,7 +93,7 @@ export default function CarrierBidsPage() {
             filter === 'active' ? 'bg-emerald-900/50 text-emerald-400' : 'text-zinc-400 hover:bg-zinc-800/50'
           }`}
         >
-          Active ({bids.filter((b) => b.status === 'sealed' || b.status === 'revealed').length})
+          In Progress ({bids.filter((b) => b.status === 'sealed' || b.status === 'revealed').length})
         </button>
         <button
           onClick={() => setFilter('history')}
@@ -110,8 +110,8 @@ export default function CarrierBidsPage() {
         <EmptyState
           icon="🔒"
           title="No Bids Yet"
-          description="Browse the marketplace to place your first sealed bid."
-          action={{ label: 'Browse Tenders', href: '/carrier' }}
+          description="Find an auction and submit your first private bid."
+          action={{ label: 'Find Auctions', href: '/carrier' }}
         />
       ) : (
         <div className="space-y-3">
