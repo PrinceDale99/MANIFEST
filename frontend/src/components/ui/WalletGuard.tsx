@@ -37,8 +37,8 @@ export default function WalletGuard({ children, fallback }: WalletGuardProps) {
           <div className="mb-4 text-5xl">🔐</div>
           <h3 className="mb-2 text-lg font-semibold text-white">Connect Your Wallet</h3>
           <p className="mb-6 text-sm text-zinc-400 max-w-md mx-auto">
-            Connect your Midnight wallet to interact with the freight tendering protocol.
-            All bids are sealed with zero-knowledge proofs.
+            Connect your Midnight wallet to post tenders or submit bids.
+            All bids stay private until the reveal phase.
           </p>
           <button
             onClick={async () => {
