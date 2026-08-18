@@ -33,19 +33,16 @@ export default function AuditPage() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="mb-2 text-2xl font-bold text-white">Audit Trail</h1>
+        <h1 className="mb-2 text-2xl font-bold text-white">Verify Auctions</h1>
         <p className="text-sm text-zinc-400">
-          Publicly verifiable cryptographic proof that tenders were conducted fairly.
-          All commitments and reveals are on-chain.
+          See the proof that every auction was fair. All bids and results are recorded on the blockchain.
         </p>
       </div>
 
-      {/* Info Banner */}
-      <div className="mb-6 rounded-xl border border-cyan-900/50 bg-cyan-900/10 p-4">
+      {/* Info Banner */}        <div className="mb-6 rounded-xl border border-cyan-900/50 bg-cyan-900/10 p-4">
         <p className="text-sm text-cyan-400">
-          🔍 Every settled tender has a complete audit trail. You can verify that:
-          all bids were sealed during bidding, the lowest bid won, and no data leaked
-          to third parties.
+          🔍 Every completed auction has a full proof trail. You can check that:
+          all bids were private, the lowest bid won, and no one cheated.
         </p>
       </div>
 
@@ -60,8 +57,8 @@ export default function AuditPage() {
       ) : settledTenders.length === 0 ? (
         <EmptyState
           icon="🔍"
-          title="No Auditable Tenders"
-          description="Settled tenders will appear here with their complete cryptographic audit trail."
+          title="No Completed Auctions"
+          description="Finished auctions will appear here with their full proof trail."
         />
       ) : (
         <div className="space-y-3">
