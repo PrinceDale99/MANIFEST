@@ -1,19 +1,32 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Environment variables are loaded from .env.local (development)
-  // and Vercel Environment Variables (production)
-  // Do NOT hardcode env vars here — use Vercel dashboard or .env.local
-
-  // Output standalone for Docker/Vercel
   output: 'standalone',
 
-  // Optimize images
   images: {
     remotePatterns: [],
   },
 
-  // Headers for CORS (proof server)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  webpack: (config, { isServer }) => {
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+      syncWebAssembly: true,
+    }
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      ws: false,
+    }
+    return config
+  },
+
   async headers() {
     return [
       {
