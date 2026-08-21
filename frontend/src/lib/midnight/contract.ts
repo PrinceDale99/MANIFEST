@@ -5,7 +5,8 @@
 
 import type { Tender, BidCommitment, TenderStatus } from '@/types/manifest'
 import { initializeMidnightProviders } from './sdk'
-import { Contract as ManifestContract, Witnesses } from '../../managed/contract/index.js'
+import { Contract as ManifestContract } from '../../managed/contract/index.js'
+import type { Witnesses } from '../../managed/contract/index.d.ts'
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts'
 
 /**
