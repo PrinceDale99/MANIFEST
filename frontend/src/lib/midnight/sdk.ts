@@ -40,7 +40,7 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
   }
 
   // Connect to the wallet and get the WalletConnectedAPI
-  const api: WalletConnectedAPI = walletApi.connect ? await walletApi.connect('testnet') : await walletApi.enable()
+  const api: WalletConnectedAPI = walletApi.connect ? await walletApi.connect('preview') : await walletApi.enable()
 
   // Fetch synchronous keys before creating the provider
   const addresses = await api.getShieldedAddresses()
