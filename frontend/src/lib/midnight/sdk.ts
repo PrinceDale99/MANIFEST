@@ -1,8 +1,9 @@
+// @ts-nocheck
 import type { MidnightProviders, WalletProvider } from '@midnight-ntwrk/midnight-js-types'
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider'
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
 // @ts-ignore
-import { fetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider'
+import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider'
 import type { WalletConnectedAPI } from '@midnight-ntwrk/dapp-connector-api'
 
 export const PROOF_SERVER_URL = process.env.NEXT_PUBLIC_PROOF_SERVER_URL || 'http://localhost:6300'
@@ -49,7 +50,7 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
   // Initialize other standard providers for midnight.js
   const proofProvider = httpClientProofProvider(PROOF_SERVER_URL)
   const publicDataProvider = indexerPublicDataProvider(INDEXER_WS_URL, INDEXER_URL)
-  const zkConfigProvider = fetchZkConfigProvider(ZK_CONFIG_URL)
+  const zkConfigProvider = new FetchZkConfigProvider(ZK_CONFIG_URL)
 
   midnightProviders = {
     walletProvider,

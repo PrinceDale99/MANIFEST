@@ -20,10 +20,18 @@ const nextConfig = {
       asyncWebAssembly: true,
       syncWebAssembly: true,
     }
+    
     config.resolve.fallback = {
       ...config.resolve.fallback,
       ws: false,
+      crypto: false,
     }
+    
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: "webassembly/async",
+    });
+    
     return config
   },
 

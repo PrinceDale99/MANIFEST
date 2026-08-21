@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { useLocation } from 'react-router-dom'
 import type { WalletState, ProofServerStatus } from '@/types/manifest'
 import { createHealthMonitor } from '@/lib/midnight/proof-service'
 import { initializeMidnightClient } from '@/lib/midnight/client'
 
 export default function Navbar() {
-  const pathname = usePathname()
+  const pathname = useLocation().pathname
   const [wallet, setWallet] = useState<WalletState>({
     connected: false,
     network: 'preview',

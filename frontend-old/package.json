@@ -1,0 +1,37 @@
+{
+  "name": "manifest-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "node fix-exports.js"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^0.16.0",
+    "@midnight-ntwrk/dapp-connector-api": "^4.0.1",
+    "@midnight-ntwrk/midnight-js": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-contracts": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "^4.1.1",
+    "@midnight-ntwrk/wallet-sdk-facade": "^4.0.1",
+    "@midnight-ntwrk/wallet-sdk-hd": "^3.0.2",
+    "@supabase/supabase-js": "^2.112.3",
+    "next": "14.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.0"
+  }
+}
