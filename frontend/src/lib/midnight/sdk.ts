@@ -6,11 +6,11 @@ import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-p
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider'
 import type { WalletConnectedAPI } from '@midnight-ntwrk/dapp-connector-api'
 
-export const PROOF_SERVER_URL = process.env.NEXT_PUBLIC_PROOF_SERVER_URL || 'http://localhost:6300'
-export const INDEXER_WS_URL = process.env.NEXT_PUBLIC_INDEXER_WS_URL || 'ws://localhost:8088/api/v1/graphql/ws'
-export const INDEXER_URL = process.env.NEXT_PUBLIC_INDEXER_URL || 'http://localhost:8088/api/v1/graphql'
-export const NODE_URL = process.env.NEXT_PUBLIC_NODE_URL || 'http://localhost:9944'
-export const ZK_CONFIG_URL = process.env.NEXT_PUBLIC_ZK_CONFIG_URL || 'http://localhost:10000'
+export const PROOF_SERVER_URL = import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300'
+export const INDEXER_WS_URL = import.meta.env.VITE_INDEXER_WS_URL || 'ws://localhost:8088/api/v1/graphql/ws'
+export const INDEXER_URL = import.meta.env.VITE_INDEXER_URL || 'http://localhost:8088/api/v1/graphql'
+export const NODE_URL = import.meta.env.VITE_NODE_URL || 'http://localhost:9944'
+export const ZK_CONFIG_URL = import.meta.env.VITE_ZK_CONFIG_URL || 'http://localhost:10000'
 
 export let midnightProviders: MidnightProviders | null = null
 
@@ -21,8 +21,15 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
     throw new Error('Cannot initialize Midnight providers on the server side.')
   }
 
-  // Find the Lace wallet in the window
-  const laceWallet = (window as any).midnight?.lace
+  // Poll for Lace wallet injection (up to 1 second)
+  let laceWallet = (window as any).midnight?.lace;
+  let attempts = 0;
+  while (!laceWallet && attempts < 10) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    laceWallet = (window as any).midnight?.lace;
+    attempts++;
+  }
+
   if (!laceWallet) {
     throw new Error('Midnight Lace wallet extension not found. Please install Lace wallet.')
   }

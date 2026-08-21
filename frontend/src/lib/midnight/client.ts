@@ -5,9 +5,9 @@
 import type { WalletState } from '@/types/manifest'
 
 const PROOF_SERVER_URL =
-  process.env.NEXT_PUBLIC_PROOF_SERVER_URL || 'http://localhost:6300'
+  import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300'
 
-const NETWORK = (process.env.NEXT_PUBLIC_NETWORK || 'preview') as
+const NETWORK = (import.meta.env.VITE_NETWORK || 'preview') as
   | 'preview'
   | 'preprod'
   | 'mainnet'

@@ -5,7 +5,7 @@
 import type { ProofServerStatus } from '@/types/manifest'
 
 const PROOF_SERVER_URL =
-  process.env.NEXT_PUBLIC_PROOF_SERVER_URL || 'http://localhost:6300'
+  import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300'
 
 const HEALTH_CHECK_INTERVAL_MS = 5_000
 const TIMEOUT_MS = 3_000

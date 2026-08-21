@@ -8,8 +8,8 @@ import type { Tender, BidCommitment, TenderStatus } from '@/types/manifest'
 type Listener = (tenders: Tender[]) => void
 
 const PROOF_SERVER_URL =
-  process.env.NEXT_PUBLIC_PROOF_SERVER_URL !== undefined 
-    ? process.env.NEXT_PUBLIC_PROOF_SERVER_URL 
+  import.meta.env.VITE_PROOF_SERVER_URL !== undefined 
+    ? import.meta.env.VITE_PROOF_SERVER_URL 
     : 'http://localhost:6300'
 
 const POLL_INTERVAL_MS = 10_000
