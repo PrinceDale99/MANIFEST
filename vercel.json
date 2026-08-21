@@ -4,6 +4,5 @@
   "installCommand": "npm install && cd frontend && npm install",
   "outputDirectory": "frontend/.next",
   "framework": "nextjs",
-  "rootDirectory": "frontend",
   "regions": ["iad1"]
 }
