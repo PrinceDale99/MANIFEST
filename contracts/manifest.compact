@@ -128,6 +128,8 @@ export circuit submitBidCommitment(bidAmount: Uint<64>, salt: Bytes<32>): [] {
 
 export circuit transitionToReveal(): [] {
   assert(tenderStatus == TenderStatus.biddingOpen, "Tender must be in BIDDING_OPEN");
+  const caller = derive_pk(local_secret_key());
+  assert(disclose(caller == shipperPk), "Only the shipper can transition to reveal phase");
   tenderStatus = TenderStatus.revealPhase;
 }
 
@@ -160,8 +162,20 @@ export circuit revealBid(bidAmount: Uint<64>, salt: Bytes<32>): [] {
 
 // ─── Circuit: settleTender ────────────────────────────────────────────────
 
-export circuit settleTender(): [] {
+export circuit settleTender(reservePrice: Uint<64>, reserveSalt: Bytes<32>): [] {
   assert(tenderStatus == TenderStatus.revealPhase, "Tender must be in REVEAL_PHASE");
+  
+  const caller = derive_pk(local_secret_key());
+  assert(disclose(caller == shipperPk), "Only the shipper can settle the tender");
+
+  // Recompute and verify the reserve price commitment
+  const valueBytes = reservePrice as Bytes<32>;
+  const recomputed = disclose(compute_commitment(tenderId, shipperPk, valueBytes, reserveSalt));
+  assert(recomputed == reservePriceCommitment, "Reserve price commitment mismatch");
+
+  // Ensure the winning bid actually met the reserve price requirement
+  assert(disclose(lowestDisclosedBid <= reservePrice), "Lowest bid exceeds reserve price");
+
   tenderStatus = TenderStatus.settled;
 }
 

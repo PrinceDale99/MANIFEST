@@ -12,36 +12,20 @@ const NETWORK = (process.env.NEXT_PUBLIC_NETWORK || 'preview') as
   | 'preprod'
   | 'mainnet'
 
-/**
- * Initialize the Midnight SDK client.
- * In production, this connects to the Lace wallet extension
- * and the local/remote proof server.
- */
+import { initializeMidnightProviders } from './sdk'
+
 export async function initializeMidnightClient(): Promise<{
   wallet: WalletState
   proofServerUrl: string
   network: string
 }> {
-  // Check if Lace wallet extension is available
-  const hasWallet = typeof window !== 'undefined' && 'midnight' in window
-
-  if (!hasWallet) {
-    console.warn(
-      '[Manifest] Lace wallet extension not detected. Running in read-only mode.',
-    )
-    return {
-      wallet: { connected: false, network: NETWORK },
-      proofServerUrl: PROOF_SERVER_URL,
-      network: NETWORK,
-    }
-  }
-
   try {
-    // Connect to Lace wallet
-    const provider = (window as any).midnight
-    const api = await provider.enable()
-
+    const providers = await initializeMidnightProviders()
+    const api = providers.walletProvider
+    
+    // @ts-ignore
     const address = await api.getAddress()
+    // @ts-ignore
     const balance = await api.getBalance()
 
     return {

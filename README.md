@@ -9,7 +9,7 @@
 | Network  | Address |
 |----------|---------|
 | Preview  | `mn1q_preview_msym32de` |
-| Preprod  | `TBD` (pending deployment) |
+| Preprod  | `mn1q_preprod_1f34c4e95df9de61` |
 
 ---
 
