@@ -21,21 +21,26 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
     throw new Error('Cannot initialize Midnight providers on the server side.')
   }
 
-  // Poll for Lace wallet injection (up to 1 second)
-  let laceWallet = (window as any).midnight?.lace;
+  // Poll for wallet injection (up to 5 seconds)
+  let walletApi: any = null;
   let attempts = 0;
-  while (!laceWallet && attempts < 10) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    laceWallet = (window as any).midnight?.lace;
+  console.log('[Manifest] Polling for Midnight wallet...');
+  while (!walletApi && attempts < 20) {
+    await new Promise(resolve => setTimeout(resolve, 250));
+    const midnightObj = (window as any).midnight;
+    if (midnightObj) {
+      walletApi = midnightObj.lace || Object.values(midnightObj)[0];
+    }
     attempts++;
   }
 
-  if (!laceWallet) {
-    throw new Error('Midnight Lace wallet extension not found. Please install Lace wallet.')
+  if (!walletApi) {
+    console.error('[Manifest] Wallet not found. window.midnight is:', (window as any).midnight);
+    throw new Error('Midnight wallet extension not found. Please install a compatible wallet.')
   }
 
-  // Connect to Lace and get the WalletConnectedAPI
-  const api: WalletConnectedAPI = await laceWallet.enable()
+  // Connect to the wallet and get the WalletConnectedAPI
+  const api: WalletConnectedAPI = walletApi.connect ? await walletApi.connect('testnet') : await walletApi.enable()
 
   // Fetch synchronous keys before creating the provider
   const addresses = await api.getShieldedAddresses()
