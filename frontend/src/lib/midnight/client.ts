@@ -7,12 +7,12 @@ import type { WalletState } from '@/types/manifest'
 const PROOF_SERVER_URL =
   import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300'
 
-const NETWORK = (import.meta.env.VITE_NETWORK || 'preview') as
+import { initializeMidnightProviders, NETWORK_ID } from './sdk'
+
+const NETWORK = NETWORK_ID as
   | 'preview'
   | 'preprod'
   | 'mainnet'
-
-import { initializeMidnightProviders } from './sdk'
 
 export async function initializeMidnightClient(): Promise<{
   wallet: WalletState

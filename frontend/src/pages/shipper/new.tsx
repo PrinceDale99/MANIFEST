@@ -4,6 +4,8 @@
 import { useState } from 'react'
 import { EquipmentType } from '@/types/manifest'
 import ProgressSteps from '@/components/ui/ProgressSteps'
+import { deployTender } from '@/lib/midnight/contract'
+import { signMessage } from '@/lib/midnight/client'
 
 const STEPS = [
   { label: 'Job Details', description: 'Where and what to ship' },
@@ -36,12 +38,46 @@ export default function NewTenderPage() {
   }
 
   const handleSubmit = async () => {
-    setLoading(true)
-    // In production: compute loadHash, deploy contract via Midnight SDK
-    await new Promise((r) => setTimeout(r, 2000))
-    setLoading(false)
-    alert('Tender deployed to Midnight Preview! (Demo mode)')
-    window.location.href = '/shipper'
+    try {
+      setLoading(true)
+      
+      const message = 'Manifest Protocol: Authorize session'
+      const sigHex = await signMessage(message)
+      
+      const hexToBytes = (hex: string) => {
+        let bytes = new Uint8Array(Math.ceil(hex.length / 2));
+        for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+        return bytes;
+      }
+      const bytesToHex = (bytes: Uint8Array) => Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+
+      const privateKey = hexToBytes(sigHex.substring(0, 64))
+      
+      const loadHashStr = form.origin + form.destination + form.weightLbs + form.equipmentType;
+      // Truncate or hash loadHashStr to 32 bytes for demo
+      let loadHash = new Uint8Array(32);
+      for(let i = 0; i < Math.min(32, loadHashStr.length); i++) loadHash[i] = loadHashStr.charCodeAt(i);
+      
+      let reservePriceCommitment = new Uint8Array(32); // Default 0 hash for now
+      
+      const biddingDeadline = BigInt(Date.now() + Number(form.biddingHours) * 3600000);
+      const revealDeadline = BigInt(Date.now() + (Number(form.biddingHours) + Number(form.revealHours)) * 3600000);
+      
+      const result = await deployTender({
+        loadHash: bytesToHex(loadHash),
+        reservePriceCommitment: bytesToHex(reservePriceCommitment),
+        biddingDeadline,
+        revealDeadline,
+        privateKey
+      })
+      
+      alert('Tender deployed to Midnight! Contract: ' + result.tenderId)
+      window.location.href = '/shipper'
+    } catch (e: any) {
+      console.error(e)
+      alert('Deployment failed: ' + e.message)
+      setLoading(false)
+    }
   }
 
   return (

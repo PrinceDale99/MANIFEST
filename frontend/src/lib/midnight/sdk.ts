@@ -7,11 +7,24 @@ import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-conf
 import type { WalletConnectedAPI } from '@midnight-ntwrk/dapp-connector-api'
 
 export const PROOF_SERVER_URL = import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300'
-export const INDEXER_WS_URL = import.meta.env.VITE_INDEXER_WS_URL || 'ws://localhost:8088/api/v1/graphql/ws'
-export const INDEXER_URL = import.meta.env.VITE_INDEXER_URL || 'http://localhost:8088/api/v1/graphql'
-export const NODE_URL = import.meta.env.VITE_NODE_URL || 'http://localhost:9944'
+export const getNetworkUrls = (networkId: string) => {
+  if (networkId === 'preprod') {
+    return {
+      indexer: 'https://indexer.preprod.midnight.network/api/v1/graphql',
+      indexerWs: 'wss://indexer.preprod.midnight.network/api/v1/graphql/ws',
+      node: 'https://rpc.preprod.midnight.network'
+    }
+  }
+  // default preview
+  return {
+    indexer: import.meta.env.VITE_INDEXER_URL || 'https://indexer.testnet.midnight.network/api/v1/graphql',
+    indexerWs: import.meta.env.VITE_INDEXER_WS_URL || 'wss://indexer.testnet.midnight.network/api/v1/graphql/ws',
+    node: import.meta.env.VITE_NODE_URL || 'https://rpc.testnet.midnight.network'
+  }
+}
 export const ZK_CONFIG_URL = import.meta.env.VITE_ZK_CONFIG_URL || 'http://localhost:10000'
 
+export const NETWORK_ID = localStorage.getItem('midnight_network_id') || import.meta.env.VITE_NETWORK_ID || 'preview'
 export let midnightProviders: MidnightProviders | null = null
 
 export async function initializeMidnightProviders(): Promise<MidnightProviders> {
@@ -40,7 +53,7 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
   }
 
   // Connect to the wallet and get the WalletConnectedAPI
-  const api: WalletConnectedAPI = walletApi.connect ? await walletApi.connect('preview') : await walletApi.enable()
+  const api: WalletConnectedAPI = walletApi.connect ? await walletApi.connect(NETWORK_ID) : await walletApi.enable()
 
   // Fetch synchronous keys before creating the provider
   const addresses = await api.getShieldedAddresses()
@@ -61,7 +74,8 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
 
   // Initialize other standard providers for midnight.js
   const proofProvider = httpClientProofProvider(PROOF_SERVER_URL)
-  const publicDataProvider = indexerPublicDataProvider(INDEXER_WS_URL, INDEXER_URL)
+  const urls = getNetworkUrls(NETWORK_ID)
+  const publicDataProvider = indexerPublicDataProvider(urls.indexerWs, urls.indexer)
   const zkConfigProvider = new FetchZkConfigProvider(ZK_CONFIG_URL)
 
   midnightProviders = {

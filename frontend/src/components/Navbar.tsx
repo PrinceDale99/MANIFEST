@@ -10,7 +10,7 @@ export default function Navbar() {
   const pathname = useLocation().pathname
   const [wallet, setWallet] = useState<WalletState>({
     connected: false,
-    network: 'preview',
+    network: (localStorage.getItem('midnight_network_id') || 'preview') as any,
   })
   const [proofServer, setProofServer] = useState<ProofServerStatus>({
     connected: false,
@@ -70,10 +70,19 @@ export default function Navbar() {
 
         {/* Right Side */}
         <div className="flex items-center gap-3">
-          {/* Network Badge */}
-          <span className="hidden rounded-full border border-zinc-700 bg-zinc-800/50 px-2.5 py-1 font-mono text-[11px] uppercase text-zinc-400 sm:inline">
-            {wallet.network}
-          </span>
+          {/* Network Switcher */}
+          <select
+            value={wallet.network}
+            onChange={(e) => {
+              localStorage.setItem('midnight_network_id', e.target.value)
+              window.location.reload()
+            }}
+            className="hidden cursor-pointer rounded-full border border-zinc-700 bg-zinc-800/50 px-2.5 py-1 font-mono text-[11px] uppercase text-zinc-400 outline-none hover:bg-zinc-700/50 sm:inline focus:ring-0"
+          >
+            <option value="preview">Preview (Testnet)</option>
+            <option value="preprod">Preprod</option>
+            <option value="mainnet">Mainnet</option>
+          </select>
 
           {/* Proof Server Status */}
           <div className="hidden items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800/50 px-2.5 py-1 sm:flex">
