@@ -31,14 +31,22 @@
   "peerDependencies": {
     "@midnight-ntwrk/compact-js": "^2.5.3",
     "@midnight-ntwrk/compact-js-command": "^2.5.3",
-    "@midnight-ntwrk/compact-runtime": "^0.16.0",
+    "@midnight-ntwrk/compact-runtime": "0.18.0-rc.1",
     "@midnight-ntwrk/wallet-sdk": "^1.1.0"
   },
   "peerDependenciesMeta": {
-    "@midnight-ntwrk/compact-js": { "optional": true },
-    "@midnight-ntwrk/compact-js-command": { "optional": true },
-    "@midnight-ntwrk/compact-runtime": { "optional": true },
-    "@midnight-ntwrk/wallet-sdk": { "optional": true }
+    "@midnight-ntwrk/compact-js": {
+      "optional": true
+    },
+    "@midnight-ntwrk/compact-js-command": {
+      "optional": true
+    },
+    "@midnight-ntwrk/compact-runtime": {
+      "optional": true
+    },
+    "@midnight-ntwrk/wallet-sdk": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=22.0.0"

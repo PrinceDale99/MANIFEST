@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { EquipmentType } from '@/types/manifest'
 import ProgressSteps from '@/components/ui/ProgressSteps'
-import { deployTender } from '@/lib/midnight/contract'
+import { createTender } from '@/lib/midnight/contract'
 import { signMessage } from '@/lib/midnight/client'
 
 const STEPS = [
@@ -58,20 +58,15 @@ export default function NewTenderPage() {
       let loadHash = new Uint8Array(32);
       for(let i = 0; i < Math.min(32, loadHashStr.length); i++) loadHash[i] = loadHashStr.charCodeAt(i);
       
-      let reservePriceCommitment = new Uint8Array(32); // Default 0 hash for now
-      
-      const biddingDeadline = BigInt(Date.now() + Number(form.biddingHours) * 3600000);
-      const revealDeadline = BigInt(Date.now() + (Number(form.biddingHours) + Number(form.revealHours)) * 3600000);
-      
-      const result = await deployTender({
-        loadHash: bytesToHex(loadHash),
-        reservePriceCommitment: bytesToHex(reservePriceCommitment),
-        biddingDeadline,
-        revealDeadline,
+      const tx = await createTender({
+        loadHash: bytesToHex(loadHash).padEnd(64, '0'),
+        reservePriceCommitment: bytesToHex(loadHash).padEnd(64, '1'),
+        biddingDeadline: BigInt(Date.now() + Number(form.biddingHours) * 3600000),
+        revealDeadline: BigInt(Date.now() + (Number(form.biddingHours) + Number(form.revealHours)) * 3600000),
         privateKey
       })
       
-      alert('Tender deployed to Midnight! Contract: ' + result.tenderId)
+      alert('Tender deployed to Midnight! Contract: ' + tx.txHash)
       window.location.href = '/shipper'
     } catch (e: any) {
       console.error(e)
