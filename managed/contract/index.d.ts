@@ -16,57 +16,146 @@ export type Witnesses<PS> = {
 }
 
 export type ImpureCircuits<PS> = {
-  openBidding(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  createTender(context: __compactRuntime.CircuitContext<PS>,
+               _tenderId_0: Uint8Array,
+               _loadHash_0: Uint8Array,
+               _reservePriceCommitment_0: Uint8Array,
+               _biddingDeadline_0: bigint,
+               _revealDeadline_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  openBidding(context: __compactRuntime.CircuitContext<PS>,
+              _tenderId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   submitBidCommitment(context: __compactRuntime.CircuitContext<PS>,
+                      _tenderId_0: Uint8Array,
                       bidAmount_0: bigint,
-                      salt_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
-  transitionToReveal(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
+                      salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  transitionToReveal(context: __compactRuntime.CircuitContext<PS>,
+                     _tenderId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   revealBid(context: __compactRuntime.CircuitContext<PS>,
+            _tenderId_0: Uint8Array,
             bidAmount_0: bigint,
-            salt_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
-  settleTender(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
-  cancelTender(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
+            salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  settleTender(context: __compactRuntime.CircuitContext<PS>,
+               _tenderId_0: Uint8Array,
+               reservePrice_0: bigint,
+               reserveSalt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  cancelTender(context: __compactRuntime.CircuitContext<PS>,
+               _tenderId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type ProvableCircuits<PS> = {
-  openBidding(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  createTender(context: __compactRuntime.CircuitContext<PS>,
+               _tenderId_0: Uint8Array,
+               _loadHash_0: Uint8Array,
+               _reservePriceCommitment_0: Uint8Array,
+               _biddingDeadline_0: bigint,
+               _revealDeadline_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  openBidding(context: __compactRuntime.CircuitContext<PS>,
+              _tenderId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   submitBidCommitment(context: __compactRuntime.CircuitContext<PS>,
+                      _tenderId_0: Uint8Array,
                       bidAmount_0: bigint,
-                      salt_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
-  transitionToReveal(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
+                      salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  transitionToReveal(context: __compactRuntime.CircuitContext<PS>,
+                     _tenderId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   revealBid(context: __compactRuntime.CircuitContext<PS>,
+            _tenderId_0: Uint8Array,
             bidAmount_0: bigint,
-            salt_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
-  settleTender(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
-  cancelTender(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
+            salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  settleTender(context: __compactRuntime.CircuitContext<PS>,
+               _tenderId_0: Uint8Array,
+               reservePrice_0: bigint,
+               reserveSalt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  cancelTender(context: __compactRuntime.CircuitContext<PS>,
+               _tenderId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type PureCircuits = {
 }
 
 export type Circuits<PS> = {
-  openBidding(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  createTender(context: __compactRuntime.CircuitContext<PS>,
+               _tenderId_0: Uint8Array,
+               _loadHash_0: Uint8Array,
+               _reservePriceCommitment_0: Uint8Array,
+               _biddingDeadline_0: bigint,
+               _revealDeadline_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  openBidding(context: __compactRuntime.CircuitContext<PS>,
+              _tenderId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   submitBidCommitment(context: __compactRuntime.CircuitContext<PS>,
+                      _tenderId_0: Uint8Array,
                       bidAmount_0: bigint,
-                      salt_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
-  transitionToReveal(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
+                      salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  transitionToReveal(context: __compactRuntime.CircuitContext<PS>,
+                     _tenderId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   revealBid(context: __compactRuntime.CircuitContext<PS>,
+            _tenderId_0: Uint8Array,
             bidAmount_0: bigint,
-            salt_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
-  settleTender(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
-  cancelTender(context: __compactRuntime.CircuitContext<PS>): Promise<__compactRuntime.CircuitResults<PS, []>>;
+            salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  settleTender(context: __compactRuntime.CircuitContext<PS>,
+               _tenderId_0: Uint8Array,
+               reservePrice_0: bigint,
+               reserveSalt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  cancelTender(context: __compactRuntime.CircuitContext<PS>,
+               _tenderId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type Ledger = {
-  readonly tenderId: Uint8Array;
-  readonly shipperPk: Uint8Array;
-  readonly loadHash: Uint8Array;
-  readonly reservePriceCommitment: Uint8Array;
-  readonly biddingDeadline: bigint;
-  readonly revealDeadline: bigint;
-  readonly tenderStatus: TenderStatus;
-  readonly lowestDisclosedBid: bigint;
-  readonly awardedCarrier: Uint8Array;
+  shippers: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): Uint8Array;
+    [Symbol.iterator](): Iterator<[Uint8Array, Uint8Array]>
+  };
+  loadHashes: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): Uint8Array;
+    [Symbol.iterator](): Iterator<[Uint8Array, Uint8Array]>
+  };
+  reservePriceCommitments: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): Uint8Array;
+    [Symbol.iterator](): Iterator<[Uint8Array, Uint8Array]>
+  };
+  biddingDeadlines: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): bigint;
+    [Symbol.iterator](): Iterator<[Uint8Array, bigint]>
+  };
+  revealDeadlines: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): bigint;
+    [Symbol.iterator](): Iterator<[Uint8Array, bigint]>
+  };
+  tenderStatuses: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): TenderStatus;
+    [Symbol.iterator](): Iterator<[Uint8Array, TenderStatus]>
+  };
+  lowestDisclosedBids: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): bigint;
+    [Symbol.iterator](): Iterator<[Uint8Array, bigint]>
+  };
+  awardedCarriers: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): Uint8Array;
+    [Symbol.iterator](): Iterator<[Uint8Array, Uint8Array]>
+  };
   carrierCommitments: {
     isEmpty(): boolean;
     size(): bigint;
@@ -86,14 +175,8 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
   impureCircuits: ImpureCircuits<PS>;
   provableCircuits: ProvableCircuits<PS>;
   constructor(witnesses: W);
-  initialState(context: __compactRuntime.ConstructorContext<PS>,
-               _tenderId_0: Uint8Array,
-               _loadHash_0: Uint8Array,
-               _reservePriceCommitment_0: Uint8Array,
-               _biddingDeadline_0: bigint,
-               _revealDeadline_0: bigint): Promise<__compactRuntime.ConstructorResult<PS>>;
+  initialState(context: __compactRuntime.ConstructorContext<PS>): __compactRuntime.ConstructorResult<PS>;
 }
 
 export declare function ledger(state: __compactRuntime.StateValue | __compactRuntime.ChargedState): Ledger;
 export declare const pureCircuits: PureCircuits;
-export declare const expectedVk: Record<string, string>;

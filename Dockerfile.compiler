@@ -15,7 +15,7 @@ WORKDIR /app
 COPY contracts/ ./contracts/
 
 # Install compiler AND compile in one RUN to persist state
-RUN compact update 0.33.0 && \
+RUN compact update && \
     compact --version && \
     compact compile contracts/manifest.compact managed && \
     echo "=== Compilation output ===" && \

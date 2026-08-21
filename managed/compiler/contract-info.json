@@ -1,13 +1,67 @@
 {
-  "compiler-version": "0.33.0",
-  "language-version": "0.25.0",
-  "runtime-version": "0.18.0-rc.1",
+  "compiler-version": "0.31.1",
+  "language-version": "0.23.0",
+  "runtime-version": "0.16.0",
   "circuits": [
+    {
+      "name": "createTender",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "_tenderId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "_loadHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "_reservePriceCommitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "_biddingDeadline",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        },
+        {
+          "name": "_revealDeadline",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
     {
       "name": "openBidding",
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "_tenderId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
       ],
       "result-type": {
         "type-name": "Tuple",
@@ -20,6 +74,13 @@
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "_tenderId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
         {
           "name": "bidAmount",
           "type": {
@@ -46,6 +107,13 @@
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "_tenderId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
       ],
       "result-type": {
         "type-name": "Tuple",
@@ -58,6 +126,13 @@
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "_tenderId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
         {
           "name": "bidAmount",
           "type": {
@@ -84,6 +159,27 @@
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "_tenderId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "reservePrice",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        },
+        {
+          "name": "reserveSalt",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
       ],
       "result-type": {
         "type-name": "Tuple",
@@ -96,6 +192,13 @@
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "_tenderId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
       ],
       "result-type": {
         "type-name": "Tuple",
@@ -153,71 +256,85 @@
   ],
   "ledger": [
     {
-      "name": "tenderId",
+      "name": "shippers",
       "index": 0,
       "exported": true,
-      "storage": "Cell",
-      "type": {
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
         "type-name": "Bytes",
         "length": 32
       }
     },
     {
-      "name": "shipperPk",
+      "name": "loadHashes",
       "index": 1,
       "exported": true,
-      "storage": "Cell",
-      "type": {
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
         "type-name": "Bytes",
         "length": 32
       }
     },
     {
-      "name": "loadHash",
+      "name": "reservePriceCommitments",
       "index": 2,
       "exported": true,
-      "storage": "Cell",
-      "type": {
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
         "type-name": "Bytes",
         "length": 32
       }
     },
     {
-      "name": "reservePriceCommitment",
+      "name": "biddingDeadlines",
       "index": 3,
       "exported": true,
-      "storage": "Cell",
-      "type": {
+      "storage": "Map",
+      "key": {
         "type-name": "Bytes",
         "length": 32
+      },
+      "value": {
+        "type-name": "Uint",
+        "maxval": 18446744073709551615
       }
     },
     {
-      "name": "biddingDeadline",
+      "name": "revealDeadlines",
       "index": 4,
       "exported": true,
-      "storage": "Cell",
-      "type": {
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
         "type-name": "Uint",
         "maxval": 18446744073709551615
       }
     },
     {
-      "name": "revealDeadline",
+      "name": "tenderStatuses",
       "index": 5,
       "exported": true,
-      "storage": "Cell",
-      "type": {
-        "type-name": "Uint",
-        "maxval": 18446744073709551615
-      }
-    },
-    {
-      "name": "tenderStatus",
-      "index": 6,
-      "exported": true,
-      "storage": "Cell",
-      "type": {
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
         "type-name": "Enum",
         "name": "TenderStatus",
         "elements": [
@@ -230,28 +347,36 @@
       }
     },
     {
-      "name": "lowestDisclosedBid",
-      "index": 7,
+      "name": "lowestDisclosedBids",
+      "index": 6,
       "exported": true,
-      "storage": "Cell",
-      "type": {
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
         "type-name": "Uint",
         "maxval": 18446744073709551615
       }
     },
     {
-      "name": "awardedCarrier",
-      "index": 8,
+      "name": "awardedCarriers",
+      "index": 7,
       "exported": true,
-      "storage": "Cell",
-      "type": {
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
         "type-name": "Bytes",
         "length": 32
       }
     },
     {
       "name": "carrierCommitments",
-      "index": 9,
+      "index": 8,
       "exported": true,
       "storage": "Map",
       "key": {
