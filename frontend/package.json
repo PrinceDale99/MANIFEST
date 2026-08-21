@@ -9,6 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^0.16.0",
+    "@midnight-ntwrk/midnight-js-contracts": "^4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "^4.1.1",
+    "@midnight-ntwrk/wallet-sdk-hd": "^3.0.2",
+    "@supabase/supabase-js": "^2.112.3",
     "next": "14.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

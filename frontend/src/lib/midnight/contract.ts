@@ -4,7 +4,7 @@
 
 import type { Tender, BidCommitment, TenderStatus } from '@/types/manifest'
 import { initializeMidnightProviders } from './sdk'
-import { Contract as ManifestContract, Witnesses } from '../../../../managed/contract/index.js'
+import { Contract as ManifestContract, Witnesses } from '../../managed/contract/index.js'
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts'
 
 /**
@@ -13,13 +13,13 @@ import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-j
  */
 function createWitnesses(privateKey: Uint8Array, bidAmount?: bigint, salt?: Uint8Array): Witnesses<any> {
   return {
-    local_secret_key: (context) => [context.state, privateKey],
+    local_secret_key: (context) => [(context as any).privateState ?? (context as any).state, privateKey],
     store_bid_amount: (context, amount) => {
       // Typically used for local persistent state tracking, omitted here for simplicity
-      return [context.state, []]
+      return [(context as any).privateState ?? (context as any).state, []]
     },
     store_salt: (context, salt) => {
-      return [context.state, []]
+      return [(context as any).privateState ?? (context as any).state, []]
     }
   }
 }

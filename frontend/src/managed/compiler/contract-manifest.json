@@ -1,0 +1,158 @@
+{
+  "manifest-version": "1",
+  "compiler-version": "0.33.0",
+  "language-version": "0.25.0",
+  "runtime-version": "0.18.0-rc.1",
+  "compiler": {
+    "type": "directory",
+    "contract-info.json": {
+      "type": "file",
+      "size": 4945,
+      "hash": "22b435afcb4e357993dc82d84e7a3a373b366bffcc53e27790d4baad1560b45e"
+    }
+  },
+  "contract": {
+    "type": "directory",
+    "index.d.ts": {
+      "type": "file",
+      "size": 4765,
+      "hash": "e3c4d98d972d150dd3e59d483f915825af728a5159169bb11312208bd9a3cc61"
+    },
+    "index.js": {
+      "type": "file",
+      "size": 95551,
+      "hash": "4d6280288f28dbe966fbb1a05a331739857dcf5b60b250af0ed48ab96b22b4ea"
+    },
+    "index.js.map": {
+      "type": "file",
+      "size": 3313,
+      "hash": "1babb8d7c90c25e6cab90e3f53f7c6c6a4951542444fd3230138609b605f56c8"
+    }
+  },
+  "zkir": {
+    "type": "directory",
+    "cancelTender.bzkir": {
+      "type": "file",
+      "size": 281,
+      "hash": "39e1088e8758248b3d6809181449bad07f53fe9036bb361aff3d07bd39600c02"
+    },
+    "cancelTender.zkir": {
+      "type": "file",
+      "size": 4341,
+      "hash": "254caae3aa144da1aeed6d546cafe1e478d9c7b138ed02029dfa0266ac97c37e"
+    },
+    "openBidding.bzkir": {
+      "type": "file",
+      "size": 209,
+      "hash": "c3e1b896f8ce4fde6f45e928772adff7a7656289d3158de2ec935e2af0bb9585"
+    },
+    "openBidding.zkir": {
+      "type": "file",
+      "size": 3172,
+      "hash": "ebf6f4d6cc000a98a4c807c6515bcec40b9623b1b9c2a9ddb0cea3ca2bf7b13f"
+    },
+    "revealBid.bzkir": {
+      "type": "file",
+      "size": 486,
+      "hash": "2f687175ccdd6c004a73d970b2416533d0be1fc24294f132e147cf9ad50c03bc"
+    },
+    "revealBid.zkir": {
+      "type": "file",
+      "size": 8119,
+      "hash": "42e6a8d59a2bef8acf090330566102e7307b95c54aece940b0251a3ed836cf13"
+    },
+    "settleTender.bzkir": {
+      "type": "file",
+      "size": 119,
+      "hash": "d17e7424312ef6f895d9a5811823c196f4b22a1cddb68818fcd2cb08a45f25af"
+    },
+    "settleTender.zkir": {
+      "type": "file",
+      "size": 1834,
+      "hash": "28845acc7d6b349974fa6bd92bd891919c39d64df566c4c3b1577e416363745a"
+    },
+    "submitBidCommitment.bzkir": {
+      "type": "file",
+      "size": 261,
+      "hash": "3ceec57c6d7bba2aedefaf76721c744bafa60159dd269be37b762b9f12524fe1"
+    },
+    "submitBidCommitment.zkir": {
+      "type": "file",
+      "size": 4099,
+      "hash": "432844ce6c710fbab60ed5ff29c2211f8064a8e2890ba57205d4f2a8f4d9ff91"
+    },
+    "transitionToReveal.bzkir": {
+      "type": "file",
+      "size": 117,
+      "hash": "6a1f4692cc18deed7651f29cdd8c04f2f0e7fdea5df41a28930a4b5ecb849664"
+    },
+    "transitionToReveal.zkir": {
+      "type": "file",
+      "size": 1794,
+      "hash": "ce64b43cabc0713b603f9a9ad1d20a916ba1025b9b518965825032c5c18d46b4"
+    }
+  },
+  "keys": {
+    "type": "directory",
+    "cancelTender.prover": {
+      "type": "file",
+      "size": 2820398,
+      "hash": "067552b88786d666af651f7138147809660917996e7ac88e4eba982640f4c489"
+    },
+    "cancelTender.verifier": {
+      "type": "file",
+      "size": 2119,
+      "hash": "f68b444787eb281330a8e44a7b1d1ffc021cea3e425c286b7cd86e6ff6881cb3"
+    },
+    "openBidding.prover": {
+      "type": "file",
+      "size": 2820257,
+      "hash": "50ab4c2a21a8480457622ab8571e5613d74cd6e1d27c6cde2b2c3338f77d70c0"
+    },
+    "openBidding.verifier": {
+      "type": "file",
+      "size": 2119,
+      "hash": "7fc6d8911edff70673b83f9079c9eb3131c1ef92659748c860761cb113a14101"
+    },
+    "revealBid.prover": {
+      "type": "file",
+      "size": 5217524,
+      "hash": "d23c537a8e2eab972511eacdf231e56796d2317ef55699a9a355df85d924892f"
+    },
+    "revealBid.verifier": {
+      "type": "file",
+      "size": 2119,
+      "hash": "eb6c599f7a68c615493663647d988296f8da63d689ee5fe933311075cdf94b13"
+    },
+    "settleTender.prover": {
+      "type": "file",
+      "size": 22719,
+      "hash": "775c56e7fbc8e2ce15482d71241639a28ea046694a044cb3383d68c40405c4b9"
+    },
+    "settleTender.verifier": {
+      "type": "file",
+      "size": 1351,
+      "hash": "0bef304677a796757832dd3d040fe04d18ce9e3aba193f5286d68716f8574501"
+    },
+    "submitBidCommitment.prover": {
+      "type": "file",
+      "size": 5216943,
+      "hash": "ea5352bd6b4814fdd75e507fa6891b32bcbb9f927ae2716259d60db4fc3167a0"
+    },
+    "submitBidCommitment.verifier": {
+      "type": "file",
+      "size": 2119,
+      "hash": "016b0a28f8b93b96d12d13fee8f969a699178813002d3d09552a7f7bebdb5c50"
+    },
+    "transitionToReveal.prover": {
+      "type": "file",
+      "size": 22688,
+      "hash": "c3ca19e32c0d224372e533fc1a5c2c5bc74ad937ebc2554f0cd0a68854f8a687"
+    },
+    "transitionToReveal.verifier": {
+      "type": "file",
+      "size": 1351,
+      "hash": "b37787a81c6ecfa956b3a4e82ab48c31ce2f9de096b897a3d155dd1ff09a781f"
+    }
+  }
+}
