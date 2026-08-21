@@ -63,7 +63,7 @@ export async function openBidding(
   const witnesses = createWitnesses(privateKey)
   
   // @ts-ignore
-  const contract = await findDeployedContract(providers, tenderId, new ManifestContract(witnesses))
+  const contract: any = await findDeployedContract(providers, tenderId, new ManifestContract(witnesses))
   const tx = await contract.impureCircuits.openBidding()
   
   return { txHash: tx.txHash }
@@ -83,7 +83,7 @@ export async function submitBidCommitment(params: {
   const witnesses = createWitnesses(params.privateKey, params.bidAmount, new TextEncoder().encode(params.salt))
   
   // @ts-ignore
-  const contract = await findDeployedContract(providers, params.tenderId, new ManifestContract(witnesses))
+  const contract: any = await findDeployedContract(providers, params.tenderId, new ManifestContract(witnesses))
   const tx = await contract.impureCircuits.submitBidCommitment(params.bidAmount, new TextEncoder().encode(params.salt))
   
   return { commitmentHash: 'derived_locally_hash', txHash: tx.txHash }
@@ -100,7 +100,7 @@ export async function transitionToReveal(
   const witnesses = createWitnesses(privateKey)
   
   // @ts-ignore
-  const contract = await findDeployedContract(providers, tenderId, new ManifestContract(witnesses))
+  const contract: any = await findDeployedContract(providers, tenderId, new ManifestContract(witnesses))
   const tx = await contract.impureCircuits.transitionToReveal()
   
   return { txHash: tx.txHash }
@@ -120,7 +120,7 @@ export async function revealBid(params: {
   const witnesses = createWitnesses(params.privateKey, params.bidAmount, new TextEncoder().encode(params.salt))
   
   // @ts-ignore
-  const contract = await findDeployedContract(providers, params.tenderId, new ManifestContract(witnesses))
+  const contract: any = await findDeployedContract(providers, params.tenderId, new ManifestContract(witnesses))
   const tx = await contract.impureCircuits.revealBid(params.bidAmount, new TextEncoder().encode(params.salt))
   
   return { proofHash: 'generated_zk_proof', txHash: tx.txHash }
@@ -139,7 +139,7 @@ export async function settleTender(
   const witnesses = createWitnesses(privateKey)
   
   // @ts-ignore
-  const contract = await findDeployedContract(providers, tenderId, new ManifestContract(witnesses))
+  const contract: any = await findDeployedContract(providers, tenderId, new ManifestContract(witnesses))
   
   // NOTE: This now calls the updated hardened contract which takes 2 parameters
   // Ensure that the contract is recompiled using `npm run compile` via Docker!

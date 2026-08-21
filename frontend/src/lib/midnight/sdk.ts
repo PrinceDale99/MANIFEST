@@ -1,4 +1,6 @@
+// @ts-ignore
 import { DAppConnectorWalletProvider } from '@midnight-ntwrk/wallet-sdk-hd' // Assuming this is how they connect Lace
+// @ts-ignore
 import { Contract, ContractAddress } from '@midnight-ntwrk/compact-runtime'
 import { Contract as ManifestContract, Witnesses } from '../../managed/contract/index.js'
 // Note: In real midnight.js, we construct MidnightProviders with ProofServer, ZkConfig, etc.

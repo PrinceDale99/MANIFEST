@@ -4,17 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@midnight-ntwrk/compact-runtime": "^0.16.0",
     "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "^4.1.1",
     "@supabase/supabase-js": "^2.112.3",
     "@types/node": "^26.2.0",
+    "@types/ws": "^8.18.1",
     "dotenv": "^17.4.2",
     "ts-node": "^10.9.2",
     "typescript": "^7.0.2",
