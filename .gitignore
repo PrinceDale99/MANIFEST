@@ -44,3 +44,7 @@ docker-compose.override.yml
 
 # Testing
 coverage/
+
+.env.secrets
+.vercel
+.env*
