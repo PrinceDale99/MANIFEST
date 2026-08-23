@@ -31,8 +31,8 @@ export default function DeployPage() {
       setContractAddress(deployedAddress)
       setStatus('Deployed successfully!')
     } catch (err: any) {
-      console.error(err)
-      setStatus('Error: ' + (err.message || err.toString()))
+      console.error('DEPLOY ERROR', err, err?.cause, err?.cause?.message);
+      setStatus('Error: ' + (err.message || err.toString()) + ' | CAUSE: ' + (err.cause?.message || err.cause || 'none'))
     }
   }
 
