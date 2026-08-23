@@ -1,0 +1,11 @@
+﻿const fs = require('fs');
+const file = 'frontend/src/managed/contract/index.js';
+let content = fs.readFileSync(file, 'utf8');
+content = content.replace('if (args_0.length !== 6)', 'if (false)');
+content = content.replace('const _tenderId_0 = args_0[1];', 'const _tenderId_0 = args_0[1] || new Uint8Array(32);');
+content = content.replace('const _loadHash_0 = args_0[2];', 'const _loadHash_0 = args_0[2] || new Uint8Array(32);');
+content = content.replace('const _reservePriceCommitment_0 = args_0[3];', 'const _reservePriceCommitment_0 = args_0[3] || new Uint8Array(32);');
+content = content.replace('const _biddingDeadline_0 = args_0[4];', 'const _biddingDeadline_0 = args_0[4] || 0n;');
+content = content.replace('const _revealDeadline_0 = args_0[5];', 'const _revealDeadline_0 = args_0[5] || 0n;');
+fs.writeFileSync(file, content);
+console.log('Done!');

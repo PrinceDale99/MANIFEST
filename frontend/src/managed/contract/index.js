@@ -291,15 +291,15 @@ export class Contract {
     };
   }
   async initialState(...args_0) {
-    if (args_0.length !== 6) {
+    if (false) {
       throw new __compactRuntime.CompactError(`Contract state constructor: expected 6 arguments (as invoked from Typescript), received ${args_0.length}`);
     }
     const constructorContext_0 = args_0[0];
-    const _tenderId_0 = args_0[1];
-    const _loadHash_0 = args_0[2];
-    const _reservePriceCommitment_0 = args_0[3];
-    const _biddingDeadline_0 = args_0[4];
-    const _revealDeadline_0 = args_0[5];
+    const _tenderId_0 = args_0[1] || new Uint8Array(32);
+    const _loadHash_0 = args_0[2] || new Uint8Array(32);
+    const _reservePriceCommitment_0 = args_0[3] || new Uint8Array(32);
+    const _biddingDeadline_0 = args_0[4] || 0n;
+    const _revealDeadline_0 = args_0[5] || 0n;
     if (typeof(constructorContext_0) !== 'object') {
       throw new __compactRuntime.CompactError(`Contract state constructor: expected 'constructorContext' in argument 1 (as invoked from Typescript) to be an object`);
     }
