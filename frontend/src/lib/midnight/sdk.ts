@@ -25,6 +25,8 @@ export const getNetworkUrls = (networkId: string) => {
 export const ZK_CONFIG_URL = import.meta.env.VITE_ZK_CONFIG_URL || 'http://localhost:10000'
 
 export const NETWORK_ID = localStorage.getItem('midnight_network_id') || import.meta.env.VITE_NETWORK_ID || 'preview'
+import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id'
+setNetworkId(NETWORK_ID)
 export let midnightProviders: MidnightProviders | null = null
 
 export async function initializeMidnightProviders(): Promise<MidnightProviders> {
