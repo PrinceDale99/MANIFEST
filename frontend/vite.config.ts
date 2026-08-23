@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import wasm from 'vite-plugin-wasm'
 
 
-export default defineConfig({
+export default defineConfig({ envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   plugins: [
     react(), 
     // @ts-ignore
