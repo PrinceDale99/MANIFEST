@@ -58,11 +58,11 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
   const walletProvider: WalletProvider = {
     getCoinPublicKey: () => {
       const parsed = MidnightBech32m.parse(addresses.shieldedCoinPublicKey)
-      return ShieldedCoinPublicKey.codec.decode(NETWORK_ID === 'preprod' ? 'preprod' : 'testnet', parsed).toHexString() as any
+      return ShieldedCoinPublicKey.codec.decode(NETWORK_ID, parsed).toHexString() as any
     },
     getEncryptionPublicKey: () => {
       const parsed = MidnightBech32m.parse(addresses.shieldedEncryptionPublicKey)
-      return ShieldedEncryptionPublicKey.codec.decode(NETWORK_ID === 'preprod' ? 'preprod' : 'testnet', parsed).toHexString() as any
+      return ShieldedEncryptionPublicKey.codec.decode(NETWORK_ID, parsed).toHexString() as any
     },
     balanceTx: async (tx: any, ttl?: Date) => {
       const txHex = typeof tx === 'string' ? tx : tx.serialize ? tx.serialize() : ''
