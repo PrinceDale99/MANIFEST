@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { initializeMidnightProviders, NETWORK_ID } from '@/lib/midnight/sdk'
-import { Contract as ManifestContract } from '../../managed/contract/index.js'
+import { Contract as ManifestContract } from '../managed/contract/index.js'
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts'
 
 export default function DeployPage() {

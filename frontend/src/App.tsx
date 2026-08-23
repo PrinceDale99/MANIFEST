@@ -1,5 +1,4 @@
-
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+﻿import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import Page0 from './pages/audit';
@@ -13,6 +12,7 @@ import Page7 from './pages/shipper/new';
 import Page8 from './pages/shipper';
 import Page9 from './pages/shipper/tender/new';
 import Page10 from './pages/shipper/tender/_id';
+import DeployPage from './pages/deploy';
 
 function App() {
   return (
@@ -33,8 +33,9 @@ function App() {
               <Route path="/shipper" element={<Page8 />} />
               <Route path="/shipper/tender/new" element={<Page9 />} />
               <Route path="/shipper/tender/:id" element={<Page10 />} />
-
-            </Routes><Footer />
+              <Route path="/deploy" element={<DeployPage />} />
+            </Routes>
+            <Footer />
           </main>
         </div>
       </BrowserRouter>

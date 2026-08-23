@@ -1,18 +1,10 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// Manifest — Midnight SDK Client Initialization
-// ═══════════════════════════════════════════════════════════════════════════════
-
+﻿// @ts-nocheck
 import type { WalletState } from '@/types/manifest'
-
-const PROOF_SERVER_URL =
-  import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300'
-
+import { firstValueFrom } from 'rxjs'
 import { initializeMidnightProviders, NETWORK_ID } from './sdk'
 
-const NETWORK = NETWORK_ID as
-  | 'preview'
-  | 'preprod'
-  | 'mainnet'
+const PROOF_SERVER_URL = import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300'
+const NETWORK = NETWORK_ID as 'preview' | 'preprod' | 'mainnet'
 
 export async function initializeMidnightClient(): Promise<{
   wallet: WalletState
@@ -20,19 +12,22 @@ export async function initializeMidnightClient(): Promise<{
   network: string
 }> {
   try {
-    const providers = await initializeMidnightProviders()
-    const api = providers.walletProvider
+    await initializeMidnightProviders()
     
-    // @ts-ignore
-    const address = await api.getAddress()
-    // @ts-ignore
-    const balance = await api.getBalance()
+    const midnightObj = (window as any).midnight;
+    const walletApi = midnightObj["1am"] || midnightObj.lace || Object.values(midnightObj)[0];
+    const api = walletApi.connect ? await walletApi.connect(NETWORK_ID) : await walletApi.enable()
+    
+    const state = await firstValueFrom(api.state())
+    const address = state.addresses?.unshielded || 'mn_addr_unknown'
+    const balancesArr = state.balances ? Object.values(state.balances) : []
+    const balance = balancesArr.length > 0 ? BigInt(balancesArr[0]) : 0n
 
     return {
       wallet: {
         connected: true,
         address,
-        balance: BigInt(balance),
+        balance,
         network: NETWORK,
       },
       proofServerUrl: PROOF_SERVER_URL,
@@ -48,35 +43,27 @@ export async function initializeMidnightClient(): Promise<{
   }
 }
 
-/**
- * Sign a message using the connected wallet.
- * Used for deterministic salt derivation.
- */
 export async function signMessage(message: string): Promise<string> {
   if (typeof window === 'undefined' || !('midnight' in window)) {
     throw new Error('Wallet not connected')
   }
-
-  const provider = (window as any).midnight
-  const api = await provider.enable()
-  const signature = await api.signMessage(
-    new TextEncoder().encode(message),
-  )
-  return Buffer.from(signature).toString('hex')
+  const midnightObj = (window as any).midnight;
+  const walletApi = midnightObj["1am"] || midnightObj.lace || Object.values(midnightObj)[0];
+  const api = walletApi.connect ? await walletApi.connect(NETWORK_ID) : await walletApi.enable()
+  const signature = await api.signData(message, { encoding: 'text', keyType: 'unshielded' })
+  return signature.signature || ''
 }
 
-/**
- * Get the current connected wallet address.
- */
 export async function getWalletAddress(): Promise<string | null> {
   if (typeof window === 'undefined' || !('midnight' in window)) {
     return null
   }
-
   try {
-    const provider = (window as any).midnight
-    const api = await provider.enable()
-    return await api.getAddress()
+    const midnightObj = (window as any).midnight;
+    const walletApi = midnightObj["1am"] || midnightObj.lace || Object.values(midnightObj)[0];
+    const api = walletApi.connect ? await walletApi.connect(NETWORK_ID) : await walletApi.enable()
+    const state = await firstValueFrom(api.state())
+    return state.addresses?.unshielded || null
   } catch {
     return null
   }
