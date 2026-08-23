@@ -12,7 +12,7 @@ export default function DeployPage() {
 
   const handleDeploy = async () => {
     try {
-      setStatus('Connecting to 1am Wallet & Providers...')
+      await testFetch(); setStatus('Connecting to 1am Wallet & Providers...')
       const providers = await initializeMidnightProviders()
       
       setStatus('Deploying Master Contract... Please approve the transaction in your wallet.')
