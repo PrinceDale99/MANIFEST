@@ -290,7 +290,7 @@ export class Contract {
       cancelTender: this.circuits.cancelTender
     };
   }
-  async initialState(...args_0) {
+  initialState(...args_0) {
     if (false) {
       throw new __compactRuntime.CompactError(`Contract state constructor: expected 6 arguments (as invoked from Typescript), received ${args_0.length}`);
     }

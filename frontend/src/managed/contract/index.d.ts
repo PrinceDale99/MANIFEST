@@ -91,7 +91,7 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
                _loadHash_0: Uint8Array,
                _reservePriceCommitment_0: Uint8Array,
                _biddingDeadline_0: bigint,
-               _revealDeadline_0: bigint): Promise<__compactRuntime.ConstructorResult<PS>>;
+               _revealDeadline_0: bigint): __compactRuntime.ConstructorResult<PS>;
 }
 
 export declare function ledger(state: __compactRuntime.StateValue | __compactRuntime.ChargedState): Ledger;

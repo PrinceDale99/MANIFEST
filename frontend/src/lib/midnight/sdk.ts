@@ -57,8 +57,11 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
   const { MidnightBech32m, ShieldedCoinPublicKey, ShieldedEncryptionPublicKey } = await import('@midnight-ntwrk/wallet-sdk-address-format')
   const walletProvider: WalletProvider = {
     getCoinPublicKey: () => {
+      console.log('[sdk] getCoinPublicKey called! addresses:', addresses)
       const parsed = MidnightBech32m.parse(addresses.shieldedCoinPublicKey)
-      return ShieldedCoinPublicKey.codec.decode(NETWORK_ID, parsed).toHexString() as any
+      const hex = ShieldedCoinPublicKey.codec.decode(NETWORK_ID, parsed).toHexString()
+      console.log('[sdk] getCoinPublicKey returning:', hex)
+      return hex as any
     },
     getEncryptionPublicKey: () => {
       const parsed = MidnightBech32m.parse(addresses.shieldedEncryptionPublicKey)
