@@ -88,10 +88,10 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
     remove: async () => {}
   } as any
 
-  const proofProvider = httpClientProofProvider(PROOF_SERVER_URL)
+  const zkConfigProvider = new FetchZkConfigProvider(ZK_CONFIG_URL, (url, init) => fetch(url, init))
+  const proofProvider = httpClientProofProvider({ url: PROOF_SERVER_URL, zkConfigProvider })
   const urls = getNetworkUrls(NETWORK_ID)
   const publicDataProvider = indexerPublicDataProvider(urls.indexer, urls.indexerWs)
-  const zkConfigProvider = new FetchZkConfigProvider(ZK_CONFIG_URL, (url, init) => fetch(url, init))
 
   midnightProviders = {
     walletProvider,
