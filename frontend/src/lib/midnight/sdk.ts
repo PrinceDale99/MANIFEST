@@ -21,7 +21,7 @@ export const getNetworkUrls = (networkId: string) => {
     node: import.meta.env.VITE_NODE_URL || 'https://rpc.testnet.midnight.network'
   }
 }
-export const ZK_CONFIG_URL = import.meta.env.VITE_ZK_CONFIG_URL || 'http://localhost:10000'
+export const ZK_CONFIG_URL = import.meta.env.VITE_ZK_CONFIG_URL || typeof window !== 'undefined' ? window.location.origin : 'http://localhost:10000'
 
 export const NETWORK_ID = localStorage.getItem('midnight_network_id') || import.meta.env.VITE_NETWORK_ID || 'preview'
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id'
