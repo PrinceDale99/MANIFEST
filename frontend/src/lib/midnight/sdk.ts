@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import type { MidnightProviders, WalletProvider, MidnightProvider, PrivateStateProvider } from '@midnight-ntwrk/midnight-js-types'
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider'
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
@@ -54,9 +54,16 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
   const api: WalletConnectedAPI = walletApi.connect ? await walletApi.connect(NETWORK_ID) : await walletApi.enable()
   const addresses = await api.getShieldedAddresses()
 
+  const { MidnightBech32m, ShieldedCoinPublicKey, ShieldedEncryptionPublicKey } = await import('@midnight-ntwrk/wallet-sdk-address-format')
   const walletProvider: WalletProvider = {
-    getCoinPublicKey: () => addresses.shieldedCoinPublicKey as any,
-    getEncryptionPublicKey: () => addresses.shieldedEncryptionPublicKey as any,
+    getCoinPublicKey: () => {
+      const parsed = MidnightBech32m.parse(addresses.shieldedCoinPublicKey)
+      return parsed.decode(ShieldedCoinPublicKey.codec, NETWORK_ID === 'preprod' ? 'preprod' : 'testnet').toHexString() as any
+    },
+    getEncryptionPublicKey: () => {
+      const parsed = MidnightBech32m.parse(addresses.shieldedEncryptionPublicKey)
+      return parsed.decode(ShieldedEncryptionPublicKey.codec, NETWORK_ID === 'preprod' ? 'preprod' : 'testnet').toHexString() as any
+    },
     balanceTx: async (tx: any, ttl?: Date) => {
       const txHex = typeof tx === 'string' ? tx : tx.serialize ? tx.serialize() : ''
       const balancedTx = await api.balanceUnsealedTransaction(txHex)

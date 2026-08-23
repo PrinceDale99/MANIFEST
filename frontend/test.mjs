@@ -1,0 +1,1 @@
+﻿import { MidnightBech32m, ShieldedCoinPublicKey } from '@midnight-ntwrk/wallet-sdk-address-format'; const parsed = MidnightBech32m.parse('coin_pub_key1sztv50e0z3hcd0j9s7nt9qss5ms8yff9wck9t6vtd7l6nff32p9s9mctk7'); console.log(parsed.decode(ShieldedCoinPublicKey.codec, 'testnet').toHexString());
