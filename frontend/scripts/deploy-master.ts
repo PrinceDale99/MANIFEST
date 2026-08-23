@@ -81,7 +81,7 @@ async function main() {
   console.log('Deploying Master Contract...')
 
   const proofProvider = httpClientProofProvider(urls.prover)
-  const publicDataProvider = indexerPublicDataProvider(urls.indexerWs, urls.indexer)
+  const publicDataProvider = indexerPublicDataProvider(urls.indexer, urls.indexerWs)
   const zkConfigProvider = new FetchZkConfigProvider(urls.zkConfig)
 
   const providers = {

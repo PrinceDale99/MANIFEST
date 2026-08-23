@@ -75,7 +75,7 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
   // Initialize other standard providers for midnight.js
   const proofProvider = httpClientProofProvider(PROOF_SERVER_URL)
   const urls = getNetworkUrls(NETWORK_ID)
-  const publicDataProvider = indexerPublicDataProvider(urls.indexerWs, urls.indexer)
+  const publicDataProvider = indexerPublicDataProvider(urls.indexer, urls.indexerWs)
   const zkConfigProvider = new FetchZkConfigProvider(ZK_CONFIG_URL)
 
   midnightProviders = {
