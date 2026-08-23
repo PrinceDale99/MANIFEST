@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'; import { testFetch } from '../lib/midnight/testFetch';
+import { useState } from 'react'; 
 import { initializeMidnightProviders, NETWORK_ID } from '@/lib/midnight/sdk'
 import { Contract as ManifestContract } from '../managed/contract/index.js'
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts'
@@ -12,7 +12,7 @@ export default function DeployPage() {
 
   const handleDeploy = async () => {
     try {
-      await testFetch(); setStatus('Connecting to 1am Wallet & Providers...')
+      setStatus('Connecting to 1am Wallet & Providers...')
       const providers = await initializeMidnightProviders()
       
       setStatus('Deploying Master Contract... Please approve the transaction in your wallet.')
