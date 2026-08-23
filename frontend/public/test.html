@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script type="module">
+  import { FetchZkConfigProvider } from 'https://cdn.jsdelivr.net/npm/@midnight-ntwrk/midnight-js-fetch-zk-config-provider@5.0.0-beta.6/+esm';
+  
+  const provider = new FetchZkConfigProvider('https://frontend-one-pi-zkum5l95zz.vercel.app/keys', {
+    fetchFunc: (url, init) => {
+      console.log('FETCH CALLED', url);
+      return fetch(url.replace(/#/g, '%23'), init);
+    },
+    verify: 'off'
+  });
+
+  provider.getVerifierKey('manifest#openBidding')
+    .then(res => {
+      document.body.innerHTML = 'SUCCESS: ' + JSON.stringify(res).substring(0, 100);
+    })
+    .catch(err => {
+      document.body.innerHTML = 'ERROR: ' + err.message + ' | CAUSE: ' + (err.cause ? err.cause.message : err.cause);
+    });
+</script>
+</body>
+</html>
