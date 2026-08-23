@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState } from 'react'; import { testFetch } from '../lib/midnight/testFetch';
 import { initializeMidnightProviders, NETWORK_ID } from '@/lib/midnight/sdk'
 import { Contract as ManifestContract } from '../managed/contract/index.js'
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts'

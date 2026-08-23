@@ -1,5 +1,5 @@
-﻿import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider'
-import { ZK_CONFIG_URL } from '../lib/midnight/sdk'
+import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider'
+import { ZK_CONFIG_URL } from './sdk'
 
 export async function testFetch() {
   console.log("TESTING FETCH TO", ZK_CONFIG_URL)
