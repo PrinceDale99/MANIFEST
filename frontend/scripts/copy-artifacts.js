@@ -1,4 +1,4 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -14,6 +14,6 @@ const zkirDir = path.resolve(__dirname, '../src/managed/zkir');
   if (!fs.existsSync(src)) return;
   if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
   fs.readdirSync(src).forEach(file => {
-    fs.copyFileSync(path.join(src, file), path.join(dest, 'manifest#' + file));
+    fs.copyFileSync(path.join(src, file), path.join(dest, file));
   });
 });
