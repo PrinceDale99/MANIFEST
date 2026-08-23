@@ -18,7 +18,7 @@ export default function DeployPage() {
 
       // Define minimal witnesses for constructor
       const witnesses = {
-        local_secret_key: () => [{}, Buffer.alloc(32)],
+        local_secret_key: () => [{}, new Uint8Array(32)],
         store_bid_amount: () => [{}, []],
         store_salt: () => [{}, []],
       }
