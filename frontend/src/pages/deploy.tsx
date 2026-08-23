@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { initializeMidnightProviders, NETWORK_ID } from '@/lib/midnight/sdk'
 import { Contract as ManifestContract } from '../managed/contract/index.js'
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts'
+import { CompiledContract } from '@midnight-ntwrk/compact-js'
 
 export default function DeployPage() {
   const [status, setStatus] = useState<string>('Idle')
@@ -24,7 +25,7 @@ export default function DeployPage() {
       }
 
       // @ts-ignore
-      const contract = await deployContract(providers, new ManifestContract(witnesses), { initialPrivateState: {}, privateStateId: "manifest-private-state", args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n] })
+      const _compiled = CompiledContract.make("manifest", ManifestContract); const _withWitnesses = CompiledContract.withWitnesses(_compiled, witnesses); const contract = await deployContract(providers, { compiledContract: _withWitnesses, initialPrivateState: {}, privateStateId: "manifest-private-state", args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n] })
       const deployedAddress = contract.deployTxData.public.contractAddress.toString()
       
       setContractAddress(deployedAddress)

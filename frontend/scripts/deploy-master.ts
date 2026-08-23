@@ -1,6 +1,7 @@
 import { WalletBuilder } from '@midnight-ntwrk/wallet'
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id'
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts'
+import { CompiledContract } from '@midnight-ntwrk/compact-js'
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider'
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider'
@@ -100,7 +101,7 @@ async function main() {
 
   try {
     // @ts-ignore
-    const contract = await deployContract(providers, new ManifestContract(witnesses), { initialPrivateState: {}, privateStateId: "manifest-private-state", args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n] })
+    const _compiled = CompiledContract.make("manifest", ManifestContract); const _withWitnesses = CompiledContract.withWitnesses(_compiled, witnesses); const contract = await deployContract(providers, { compiledContract: _withWitnesses, initialPrivateState: {}, privateStateId: "manifest-private-state", args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n] })
     const deployedAddress = contract.deployTxData.public.contractAddress.toString()
     console.log('Master Contract successfully deployed!')
     console.log('Contract Address: ' + deployedAddress)
