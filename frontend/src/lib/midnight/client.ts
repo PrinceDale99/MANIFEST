@@ -1,6 +1,5 @@
 ﻿// @ts-nocheck
 import type { WalletState } from '@/types/manifest'
-import { firstValueFrom } from 'rxjs'
 import { initializeMidnightProviders, NETWORK_ID } from './sdk'
 
 const PROOF_SERVER_URL = import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300'
@@ -18,15 +17,16 @@ export async function initializeMidnightClient(): Promise<{
     const walletApi = midnightObj["1am"] || midnightObj.lace || Object.values(midnightObj)[0];
     const api = walletApi.connect ? await walletApi.connect(NETWORK_ID) : await walletApi.enable()
     
-    const state = await firstValueFrom(api.state())
-    const address = state.addresses?.unshielded || 'mn_addr_unknown'
-    const balancesArr = state.balances ? Object.values(state.balances) : []
+    const { unshieldedAddress } = await api.getUnshieldedAddress()
+    const balances = await api.getUnshieldedBalances()
+    
+    const balancesArr = Object.values(balances)
     const balance = balancesArr.length > 0 ? BigInt(balancesArr[0]) : 0n
 
     return {
       wallet: {
         connected: true,
-        address,
+        address: unshieldedAddress,
         balance,
         network: NETWORK,
       },
@@ -62,8 +62,8 @@ export async function getWalletAddress(): Promise<string | null> {
     const midnightObj = (window as any).midnight;
     const walletApi = midnightObj["1am"] || midnightObj.lace || Object.values(midnightObj)[0];
     const api = walletApi.connect ? await walletApi.connect(NETWORK_ID) : await walletApi.enable()
-    const state = await firstValueFrom(api.state())
-    return state.addresses?.unshielded || null
+    const { unshieldedAddress } = await api.getUnshieldedAddress()
+    return unshieldedAddress || null
   } catch {
     return null
   }
