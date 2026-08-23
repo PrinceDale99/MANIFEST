@@ -7,7 +7,7 @@ const filesToPatch = [
   'node_modules/@midnight-ntwrk/zswap/midnight_zswap_wasm_bg.js'
 ];
 
-const patchFn = 
+const patchFn = `
 function _patchVersionBytes(raw) {
     if (!raw || !raw.length) return raw;
     for (let i = 0; i < raw.length - 4; i++) {
@@ -21,7 +21,7 @@ function _patchVersionBytes(raw) {
     }
     return raw;
 }
-;
+`;
 
 for (const file of filesToPatch) {
   const fullPath = path.resolve(__dirname, '..', file);
@@ -31,10 +31,21 @@ for (const file of filesToPatch) {
     // 1. Patch _assertClass
     content = content.replace(/if \(!\(instance instanceof klass\)\) \{/g, 'if (false) {');
     
-    // 2. Patch passArray8ToWasm0 to rewrite v8->v6 for ledger-v8
-    if (file.includes('ledger-v8') && !content.includes('_patchVersionBytes')) {
+    // 2. Inject _patchVersionBytes if missing
+    if (file.includes('ledger-v8') && !content.includes('_patchVersionBytes(raw) {')) {
         content = patchFn + content;
-        content = content.replace(/function passArray8ToWasm0\(arg, malloc\) \{/g, 'function passArray8ToWasm0(arg, malloc) { _patchVersionBytes(arg);');
+    }
+
+    if (file.includes('ledger-v8')) {
+        // 3. Patch passArray8ToWasm0 just in case
+        if (!content.includes('_patchVersionBytes(arg);')) {
+            content = content.replace(/function passArray8ToWasm0\(arg, malloc\) \{/g, 'function passArray8ToWasm0(arg, malloc) { _patchVersionBytes(arg);');
+        }
+        
+        // 4. Patch deserialize functions directly!
+        if (!content.includes('_patchVersionBytes(raw);')) {
+            content = content.replace(/static deserialize\(([^)]*raw)\) \{/g, 'static deserialize($1) { _patchVersionBytes(raw);');
+        }
     }
 
     fs.writeFileSync(fullPath, content, 'utf8');
