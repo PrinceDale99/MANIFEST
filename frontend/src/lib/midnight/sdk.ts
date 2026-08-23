@@ -1,5 +1,5 @@
-// @ts-nocheck
-import type { MidnightProviders, WalletProvider } from '@midnight-ntwrk/midnight-js-types'
+﻿// @ts-nocheck
+import type { MidnightProviders, WalletProvider, MidnightProvider, PrivateStateProvider } from '@midnight-ntwrk/midnight-js-types'
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider'
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
 // @ts-ignore
@@ -15,7 +15,6 @@ export const getNetworkUrls = (networkId: string) => {
       node: 'https://rpc.preprod.midnight.network'
     }
   }
-  // default preview
   return {
     indexer: import.meta.env.VITE_INDEXER_URL || 'https://indexer.testnet.midnight.network/api/v1/graphql',
     indexerWs: import.meta.env.VITE_INDEXER_WS_URL || 'wss://indexer.testnet.midnight.network/api/v1/graphql/ws',
@@ -36,7 +35,6 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
     throw new Error('Cannot initialize Midnight providers on the server side.')
   }
 
-  // Poll for wallet injection (up to 5 seconds)
   let walletApi: any = null;
   let attempts = 0;
   console.log('[Manifest] Polling for Midnight wallet...');
@@ -50,31 +48,36 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
   }
 
   if (!walletApi) {
-    console.error('[Manifest] Wallet not found. window.midnight is:', (window as any).midnight);
     throw new Error('Midnight wallet extension not found. Please install a compatible wallet.')
   }
 
-  // Connect to the wallet and get the WalletConnectedAPI
   const api: WalletConnectedAPI = walletApi.connect ? await walletApi.connect(NETWORK_ID) : await walletApi.enable()
-
-  // Fetch synchronous keys before creating the provider
   const addresses = await api.getShieldedAddresses()
 
-  // Create a custom WalletProvider adapter that wraps the DAppConnector API
   const walletProvider: WalletProvider = {
     getCoinPublicKey: () => addresses.shieldedCoinPublicKey as any,
     getEncryptionPublicKey: () => addresses.shieldedEncryptionPublicKey as any,
     balanceTx: async (tx: any, ttl?: Date) => {
-      // For a real balancing, we serialize the unsealed transaction and pass it to Lace to balance
-      // Since `api.balanceUnsealedTransaction` expects a hex string:
       const txHex = typeof tx === 'string' ? tx : tx.serialize ? tx.serialize() : ''
       const balancedTx = await api.balanceUnsealedTransaction(txHex)
-      // Wait for wallet to submit or return the finalized tx
       return balancedTx as any
     }
   }
 
-  // Initialize other standard providers for midnight.js
+  const midnightProvider: MidnightProvider = {
+    submitTx: async (tx: any) => {
+      const txHex = typeof tx === 'string' ? tx : tx.serialize ? tx.serialize() : ''
+      const submitted = await api.submitTransaction(txHex)
+      return submitted as any
+    }
+  }
+
+  const privateStateProvider: PrivateStateProvider = {
+    get: async () => null,
+    set: async () => {},
+    remove: async () => {}
+  } as any
+
   const proofProvider = httpClientProofProvider(PROOF_SERVER_URL)
   const urls = getNetworkUrls(NETWORK_ID)
   const publicDataProvider = indexerPublicDataProvider(urls.indexer, urls.indexerWs)
@@ -82,6 +85,8 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
 
   midnightProviders = {
     walletProvider,
+    midnightProvider,
+    privateStateProvider,
     proofProvider,
     publicDataProvider,
     zkConfigProvider,
