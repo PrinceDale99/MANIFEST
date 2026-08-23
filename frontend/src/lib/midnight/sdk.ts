@@ -42,7 +42,7 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
     await new Promise(resolve => setTimeout(resolve, 250));
     const midnightObj = (window as any).midnight;
     if (midnightObj) {
-      walletApi = midnightObj.lace || Object.values(midnightObj)[0];
+      walletApi = midnightObj["1am"] || midnightObj.lace || Object.values(midnightObj)[0];
     }
     attempts++;
   }
