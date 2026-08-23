@@ -100,7 +100,7 @@ async function main() {
 
   try {
     // @ts-ignore
-    const contract = await deployContract(providers, new ManifestContract(witnesses), { args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n] })
+    const contract = await deployContract(providers, new ManifestContract(witnesses), { initialPrivateState: {}, privateStateId: "manifest-private-state", args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n] })
     const deployedAddress = contract.deployTxData.public.contractAddress.toString()
     console.log('Master Contract successfully deployed!')
     console.log('Contract Address: ' + deployedAddress)

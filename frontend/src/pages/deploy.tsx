@@ -24,7 +24,7 @@ export default function DeployPage() {
       }
 
       // @ts-ignore
-      const contract = await deployContract(providers, new ManifestContract(witnesses), { args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n] })
+      const contract = await deployContract(providers, new ManifestContract(witnesses), { initialPrivateState: {}, privateStateId: "manifest-private-state", args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n] })
       const deployedAddress = contract.deployTxData.public.contractAddress.toString()
       
       setContractAddress(deployedAddress)
