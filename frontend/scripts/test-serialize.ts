@@ -8,6 +8,7 @@ import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
 import * as zswap from '@midnight-ntwrk/zswap';
 import { firstValueFrom } from 'rxjs';
+import { MidnightBech32m, ShieldedCoinPublicKey, ShieldedEncryptionPublicKey } from '@midnight-ntwrk/wallet-sdk-address-format';
 
 const HEX_SEED = "f1a7da0b5cf5241f6933f4aecb95d19f5c36c0eebe29b7b4f565aafcbb5644ca";
 setNetworkId('test');
@@ -19,7 +20,6 @@ const witnesses = {
 };
 
 async function main() {
-    console.log("Initializing wallet...");
     const wallet = await WalletBuilder.buildFromSeed(
         'https://indexer.testnet.midnight.network/api/v1/graphql',
         'wss://indexer.testnet.midnight.network/api/v1/graphql',
@@ -29,17 +29,15 @@ async function main() {
         zswap.NetworkId.TestNet,
         'info'
     );
-    console.log("Wallet initialized. Starting deployment...");
     const zkConfigProvider = new NodeZkConfigProvider('./public', { verify: 'off' });
-    
     const proofProvider = httpClientProofProvider({ url: 'https://proof-server-whkk.onrender.com', zkConfigProvider });
-    
     wallet.start();
     const state = await firstValueFrom(wallet.state());
     
     const walletProvider = {
         balanceTx: async (tx: any, ttl?: Date) => {
-            return await wallet.balanceTransaction(tx, ttl);
+            console.log("SERIALIZED TX:", Buffer.from(tx.serialize()).toString('hex'));
+            process.exit(0);
         },
         getCoinPublicKey: () => state.coinPublicKey,
         getEncryptionPublicKey: () => state.encryptionPublicKey
@@ -60,22 +58,14 @@ async function main() {
       midnightProvider
     };
     
-    try {
-      const _compiled = CompiledContract.make("manifest", ManifestContract);
-      const _withWitnesses = CompiledContract.withWitnesses(_compiled, witnesses as any);
-      
-      const contract = await deployContract(providers, {
-        compiledContract: _withWitnesses,
-        initialPrivateState: {},
-        privateStateId: "manifest-private-state",
-        args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n]
-      });
-      console.log("Deployed! Address:", contract.deployTxData.public.contractAddress);
-    } catch (err: any) {
-      console.error("DEPLOY ERROR", err);
-      if (err.cause) console.error("CAUSE", err.cause);
-    }
+    const _compiled = CompiledContract.make("manifest", ManifestContract);
+    const _withWitnesses = CompiledContract.withWitnesses(_compiled, witnesses as any);
     
-    process.exit(0);
+    await deployContract(providers, {
+      compiledContract: _withWitnesses,
+      initialPrivateState: {},
+      privateStateId: "manifest-private-state",
+      args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n]
+    });
 }
 main().catch(console.error);
