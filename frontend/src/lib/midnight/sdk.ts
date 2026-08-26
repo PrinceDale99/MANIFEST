@@ -121,8 +121,20 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
       return ShieldedEncryptionPublicKey.codec.decode(NETWORK_ID, parsed).toHexString() as any
     },
     balanceTx: async (tx: any, ttl?: Date) => {
-      console.log('[sdk] balanceTx called')
-      const txHex = typeof tx === 'string' ? tx : tx.serialize ? tx.serialize() : ''
+      console.log('[sdk] balanceTx called with tx:', tx)
+      let txHex = '';
+      if (typeof tx === 'string') {
+        txHex = tx;
+      } else if (tx && typeof tx.serialize === 'function') {
+        txHex = tx.serialize();
+      } else if (tx && tx.transaction && typeof tx.transaction.serialize === 'function') {
+        txHex = tx.transaction.serialize();
+      } else if (tx instanceof Uint8Array) {
+        txHex = Array.from(tx).map(b => b.toString(16).padStart(2, '0')).join('');
+      } else {
+        console.error('[sdk] Unrecognized tx format in balanceTx:', tx);
+      }
+      console.log('[sdk] txHex substring:', txHex.substring(0, 50));
       const balancedTx = await api.balanceUnsealedTransaction(txHex)
       return balancedTx as any
     }

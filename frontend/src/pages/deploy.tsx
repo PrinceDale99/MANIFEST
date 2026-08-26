@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 
 import { useState } from 'react'; 
@@ -24,8 +25,27 @@ export default function DeployPage() {
         store_salt: () => [{}, []],
       }
 
+      const randomBytes = () => crypto.getRandomValues(new Uint8Array(32))
+
       // @ts-ignore
-      const _compiled = CompiledContract.make("manifest", ManifestContract); const _withWitnesses = CompiledContract.withWitnesses(_compiled, witnesses); const contract = await deployContract(providers, { compiledContract: _withWitnesses, initialPrivateState: {}, privateStateId: "manifest-private-state", args: [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), 0n, 0n] })
+      const _compiled = CompiledContract.make("manifest", ManifestContract); 
+      const _withWitnesses = CompiledContract.withWitnesses(_compiled, witnesses); 
+      
+      // Use realistic non-zero values to prevent Wallet UI crashes during balanceTx
+      const args = [
+        randomBytes(), // tenderId
+        randomBytes(), // loadHash
+        randomBytes(), // reservePriceCommitment
+        1000n,         // biddingDeadline (block height/timestamp)
+        2000n          // revealDeadline
+      ];
+      
+      const contract = await deployContract(providers, { 
+        compiledContract: _withWitnesses, 
+        initialPrivateState: {}, 
+        privateStateId: "manifest-private-state", 
+        args 
+      })
       const deployedAddress = contract.deployTxData.public.contractAddress.toString()
       
       setContractAddress(deployedAddress)
