@@ -2,11 +2,10 @@
 import type { MidnightProviders, WalletProvider, MidnightProvider, PrivateStateProvider } from '@midnight-ntwrk/midnight-js-types'
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider'
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
-// @ts-ignore
-import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider'
+import { ZKConfigProvider, createProverKey, createVerifierKey, createZKIR } from '@midnight-ntwrk/midnight-js-types'
 import type { WalletConnectedAPI } from '@midnight-ntwrk/dapp-connector-api'
 
-export const PROOF_SERVER_URL = import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:6300'
+export const PROOF_SERVER_URL = import.meta.env.VITE_PROOF_SERVER_URL || 'https://proof-server-whkk.onrender.com'
 export const getNetworkUrls = (networkId: string) => {
   if (networkId === 'preprod') {
     return {
@@ -21,9 +20,61 @@ export const getNetworkUrls = (networkId: string) => {
     node: import.meta.env.VITE_NODE_URL || 'https://rpc.testnet.midnight.network'
   }
 }
-export const ZK_CONFIG_URL = import.meta.env.VITE_ZK_CONFIG_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:10000')
 
-export const NETWORK_ID = localStorage.getItem('midnight_network_id') || import.meta.env.VITE_NETWORK_ID || 'preview'
+// Direct ZK artifact fetcher — bypasses FetchZkConfigProvider entirely.
+// The SDK's FetchZkConfigProvider prepends 'keys/' internally, so we pass
+// the BASE origin only. This custom impl fetches directly with full logging.
+class DirectZkConfigProvider extends ZKConfigProvider {
+  private baseUrl: string
+
+  constructor(baseUrl: string) {
+    super()
+    this.baseUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'
+    console.log('[ZK] DirectZkConfigProvider created, baseUrl:', this.baseUrl)
+  }
+
+  private async fetchArtifact(path: string): Promise<Uint8Array> {
+    const url = this.baseUrl + path
+    console.log('[ZK] Fetching artifact:', url)
+    try {
+      const res = await fetch(url, { method: 'GET' })
+      console.log('[ZK] Response for', path, '- status:', res.status, 'content-type:', res.headers.get('content-type'))
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText} fetching ${url}`)
+      }
+      const ct = res.headers.get('content-type') || ''
+      if (ct.includes('text/html')) {
+        throw new Error(`Got HTML instead of binary for ${url} - file likely missing on server`)
+      }
+      const buf = await res.arrayBuffer()
+      console.log('[ZK] Fetched', path, '- bytes:', buf.byteLength)
+      return new Uint8Array(buf)
+    } catch (err) {
+      console.error('[ZK] FETCH ERROR for', path, ':', err)
+      throw err
+    }
+  }
+
+  async getProverKey(circuitId: string): Promise<any> {
+    console.log('[ZK] getProverKey called for circuit:', circuitId)
+    const bytes = await this.fetchArtifact(`keys/${circuitId}.prover`)
+    return createProverKey(bytes)
+  }
+
+  async getVerifierKey(circuitId: string): Promise<any> {
+    console.log('[ZK] getVerifierKey called for circuit:', circuitId)
+    const bytes = await this.fetchArtifact(`keys/${circuitId}.verifier`)
+    return createVerifierKey(bytes)
+  }
+
+  async getZKIR(circuitId: string): Promise<any> {
+    console.log('[ZK] getZKIR called for circuit:', circuitId)
+    const bytes = await this.fetchArtifact(`zkir/${circuitId}.bzkir`)
+    return createZKIR(bytes)
+  }
+}
+
+export const NETWORK_ID = (typeof localStorage !== 'undefined' ? localStorage.getItem('midnight_network_id') : null) || import.meta.env.VITE_NETWORK_ID || 'preview'
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id'
 setNetworkId(NETWORK_ID)
 export let midnightProviders: MidnightProviders | null = null
@@ -37,22 +88,24 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
 
   let walletApi: any = null;
   let attempts = 0;
-  console.log('[Manifest] Polling for Midnight wallet...');
+  console.log('[Manifest] Polling for Midnight wallet...')
   while (!walletApi && attempts < 20) {
-    await new Promise(resolve => setTimeout(resolve, 250));
-    const midnightObj = (window as any).midnight;
+    await new Promise(resolve => setTimeout(resolve, 250))
+    const midnightObj = (window as any).midnight
     if (midnightObj) {
-      walletApi = midnightObj["1am"] || midnightObj.lace || Object.values(midnightObj)[0];
+      walletApi = midnightObj['1am'] || midnightObj.lace || Object.values(midnightObj)[0]
     }
-    attempts++;
+    attempts++
   }
 
   if (!walletApi) {
     throw new Error('Midnight wallet extension not found. Please install a compatible wallet.')
   }
 
+  console.log('[Manifest] Wallet found, connecting...')
   const api: WalletConnectedAPI = walletApi.connect ? await walletApi.connect(NETWORK_ID) : await walletApi.enable()
   const addresses = await api.getShieldedAddresses()
+  console.log('[Manifest] Wallet connected. Addresses:', addresses)
 
   const { MidnightBech32m, ShieldedCoinPublicKey, ShieldedEncryptionPublicKey } = await import('@midnight-ntwrk/wallet-sdk-address-format')
   const walletProvider: WalletProvider = {
@@ -68,6 +121,7 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
       return ShieldedEncryptionPublicKey.codec.decode(NETWORK_ID, parsed).toHexString() as any
     },
     balanceTx: async (tx: any, ttl?: Date) => {
+      console.log('[sdk] balanceTx called')
       const txHex = typeof tx === 'string' ? tx : tx.serialize ? tx.serialize() : ''
       const balancedTx = await api.balanceUnsealedTransaction(txHex)
       return balancedTx as any
@@ -76,6 +130,7 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
 
   const midnightProvider: MidnightProvider = {
     submitTx: async (tx: any) => {
+      console.log('[sdk] submitTx called')
       const txHex = typeof tx === 'string' ? tx : tx.serialize ? tx.serialize() : ''
       const submitted = await api.submitTransaction(txHex)
       return submitted as any
@@ -88,10 +143,9 @@ export async function initializeMidnightProviders(): Promise<MidnightProviders> 
     remove: async () => {}
   } as any
 
-  const zkConfigProvider = new FetchZkConfigProvider(ZK_CONFIG_URL, {
-    fetchFunc: fetch,
-    verify: 'off'
-  })
+  const baseOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:10000'
+  console.log('[ZK] Base origin for ZK artifacts:', baseOrigin)
+  const zkConfigProvider = new DirectZkConfigProvider(baseOrigin)
   const proofProvider = httpClientProofProvider({ url: PROOF_SERVER_URL, zkConfigProvider })
   const urls = getNetworkUrls(NETWORK_ID)
   const publicDataProvider = indexerPublicDataProvider(urls.indexer, urls.indexerWs)
