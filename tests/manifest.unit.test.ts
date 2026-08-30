@@ -3,8 +3,12 @@
 // Circuit logic, state transitions, and reverse auction verification
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { generateBidCommitment, verifyCommitment, computeLoadHash } from '../frontend/src/lib/crypto/commitment'
+import { beforeEach, describe, expect, it } from 'vitest'
+import {
+  computeLoadHash,
+  generateBidCommitment,
+  verifyCommitment,
+} from '../frontend/src/lib/crypto/commitment'
 import { TenderStatus } from '../frontend/src/types/manifest'
 
 // ─── Tender State Machine Tests ─────────────────────────────────────────────
@@ -20,14 +24,10 @@ describe('Tender Lifecycle State Transitions', () => {
     }
 
     // Verify DRAFT -> BIDDING_OPEN is valid
-    expect(validTransitions[TenderStatus.DRAFT]).toContain(
-      TenderStatus.BIDDING_OPEN,
-    )
+    expect(validTransitions[TenderStatus.DRAFT]).toContain(TenderStatus.BIDDING_OPEN)
 
     // Verify DRAFT -> SETTLED is invalid (not in allowed list)
-    expect(validTransitions[TenderStatus.DRAFT]).not.toContain(
-      TenderStatus.SETTLED,
-    )
+    expect(validTransitions[TenderStatus.DRAFT]).not.toContain(TenderStatus.SETTLED)
 
     // Verify SETTLED is terminal
     expect(validTransitions[TenderStatus.SETTLED]).toHaveLength(0)
@@ -46,14 +46,10 @@ describe('Tender Lifecycle State Transitions', () => {
     }
 
     // DRAFT -> REVEAL_PHASE should be invalid (must go through BIDDING_OPEN)
-    expect(validTransitions[TenderStatus.DRAFT]).not.toContain(
-      TenderStatus.REVEAL_PHASE,
-    )
+    expect(validTransitions[TenderStatus.DRAFT]).not.toContain(TenderStatus.REVEAL_PHASE)
 
     // BIDDING_OPEN -> SETTLED should be invalid (must go through REVEAL_PHASE)
-    expect(validTransitions[TenderStatus.BIDDING_OPEN]).not.toContain(
-      TenderStatus.SETTLED,
-    )
+    expect(validTransitions[TenderStatus.BIDDING_OPEN]).not.toContain(TenderStatus.SETTLED)
   })
 })
 
@@ -141,7 +137,7 @@ describe('Bid Commitment Generation', () => {
 describe('Reverse Auction Logic', () => {
   it('should track the lowest bid correctly', () => {
     const bids = [30000n, 25000n, 27500n, 22000n, 31000n]
-    const SENTINEL = 0xFFFFFFFFFFFFFFFFn
+    const SENTINEL = 0xffffffffffffffffn
 
     let lowestBid = SENTINEL
     let winner = 'none'
@@ -160,7 +156,7 @@ describe('Reverse Auction Logic', () => {
   })
 
   it('should not overwrite lowest bid with higher bid', () => {
-    const SENTINEL = 0xFFFFFFFFFFFFFFFFn
+    const SENTINEL = 0xffffffffffffffffn
     let lowestBid = SENTINEL
 
     // First bid: $3.00/mi
@@ -180,7 +176,7 @@ describe('Reverse Auction Logic', () => {
   })
 
   it('should handle the sentinel value correctly', () => {
-    const SENTINEL = 0xFFFFFFFFFFFFFFFFn
+    const SENTINEL = 0xffffffffffffffffn
     expect(SENTINEL).toBe(18446744073709551615n) // Max uint64
     expect(100n < SENTINEL).toBe(true)
   })

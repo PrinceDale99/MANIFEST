@@ -3,10 +3,10 @@
 // Direct execution and verification of compiled Compact circuits & state machine
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from 'vitest'
-import { Contract as ManifestContract } from '../frontend/src/managed/contract/index.js'
-import * as ledger from '@midnight-ntwrk/ledger-v8'
 import * as cr from '@midnight-ntwrk/compact-runtime'
+import * as ledger from '@midnight-ntwrk/ledger-v8'
+import { describe, expect, it } from 'vitest'
+import { Contract as ManifestContract } from '../frontend/src/managed/contract/index.js'
 
 describe('Manifest Compact Smart Contract Circuits', () => {
   const tenderId = new Uint8Array(32).fill(1)
@@ -56,12 +56,7 @@ describe('Manifest Compact Smart Contract Circuits', () => {
   })
 
   it('2. openBidding circuit transitions tender from DRAFT (0) to BIDDING_OPEN (1)', () => {
-    const context = cr.createCircuitContext(
-      contractAddress,
-      dummyCoinPk,
-      contractState.data,
-      {}
-    )
+    const context = cr.createCircuitContext(contractAddress, dummyCoinPk, contractState.data, {})
 
     const res = shipperContract.circuits.openBidding(context)
     expect(res).toBeDefined()
@@ -82,12 +77,7 @@ describe('Manifest Compact Smart Contract Circuits', () => {
       store_salt: () => [{}, []],
     })
 
-    const context = cr.createCircuitContext(
-      contractAddress,
-      dummyCoinPk,
-      contractState.data,
-      {}
-    )
+    const context = cr.createCircuitContext(contractAddress, dummyCoinPk, contractState.data, {})
 
     const bidAmount = 250000n // $2,500.00
     const salt = new Uint8Array(32).fill(11)
@@ -108,12 +98,7 @@ describe('Manifest Compact Smart Contract Circuits', () => {
       store_salt: () => [{}, []],
     })
 
-    const context = cr.createCircuitContext(
-      contractAddress,
-      dummyCoinPk,
-      contractState.data,
-      {}
-    )
+    const context = cr.createCircuitContext(contractAddress, dummyCoinPk, contractState.data, {})
 
     const bidAmount = 220000n // $2,200.00
     const salt = new Uint8Array(32).fill(22)
@@ -128,12 +113,7 @@ describe('Manifest Compact Smart Contract Circuits', () => {
   })
 
   it('5. transitionToReveal circuit transitions tender to REVEAL_PHASE (2)', () => {
-    const context = cr.createCircuitContext(
-      contractAddress,
-      dummyCoinPk,
-      contractState.data,
-      {}
-    )
+    const context = cr.createCircuitContext(contractAddress, dummyCoinPk, contractState.data, {})
 
     const res = shipperContract.circuits.transitionToReveal(context)
     expect(res).toBeDefined()
@@ -146,12 +126,7 @@ describe('Manifest Compact Smart Contract Circuits', () => {
   })
 
   it('6. Carrier 1 reveals $2,500 bid (becomes lowest bid)', () => {
-    const context = cr.createCircuitContext(
-      contractAddress,
-      dummyCoinPk,
-      contractState.data,
-      {}
-    )
+    const context = cr.createCircuitContext(contractAddress, dummyCoinPk, contractState.data, {})
 
     const bidAmount = 250000n
     const salt = new Uint8Array(32).fill(11)
@@ -167,12 +142,7 @@ describe('Manifest Compact Smart Contract Circuits', () => {
   })
 
   it('7. Carrier 2 reveals $2,200 bid (wins auction with lower rate)', () => {
-    const context = cr.createCircuitContext(
-      contractAddress,
-      dummyCoinPk,
-      contractState.data,
-      {}
-    )
+    const context = cr.createCircuitContext(contractAddress, dummyCoinPk, contractState.data, {})
 
     const bidAmount = 220000n
     const salt = new Uint8Array(32).fill(22)
@@ -188,12 +158,7 @@ describe('Manifest Compact Smart Contract Circuits', () => {
   })
 
   it('8. settleTender circuit finalizes auction into SETTLED (3)', () => {
-    const context = cr.createCircuitContext(
-      contractAddress,
-      dummyCoinPk,
-      contractState.data,
-      {}
-    )
+    const context = cr.createCircuitContext(contractAddress, dummyCoinPk, contractState.data, {})
 
     const res = shipperContract.circuits.settleTender(context)
     expect(res).toBeDefined()

@@ -19,10 +19,10 @@ function main() {
   // Step 1: Build Docker image with Compact compiler
   console.log('🔨 Building Compact compiler (Docker)...')
   try {
-    execSync(
-      'docker build -f Dockerfile.compiler -t manifest-compiler .',
-      { cwd: ROOT_DIR, stdio: 'pipe' }
-    )
+    execSync('docker build -f Dockerfile.compiler -t manifest-compiler .', {
+      cwd: ROOT_DIR,
+      stdio: 'pipe',
+    })
     console.log('   ✅ Compiler image built\n')
   } catch {
     console.error('   ❌ Docker build failed. Is Docker running?')
@@ -32,7 +32,9 @@ function main() {
   // Step 2: Extract compiled artifacts
   console.log('📦 Extracting compiled artifacts...')
   try {
-    try { execSync('docker rm manifest-extract 2>/dev/null', { stdio: 'pipe' }) } catch {}
+    try {
+      execSync('docker rm manifest-extract 2>/dev/null', { stdio: 'pipe' })
+    } catch {}
     execSync('docker create --name manifest-extract manifest-compiler', { stdio: 'pipe' })
     execSync('docker cp manifest-extract:/app/managed/. managed/', { cwd: ROOT_DIR, stdio: 'pipe' })
     execSync('docker rm manifest-extract', { stdio: 'pipe' })
@@ -63,9 +65,15 @@ function main() {
   console.log('  Exported Circuits (with ZK proofs):')
   console.log('  ──────────────────────────────────────')
   for (const circuit of contractInfo.circuits) {
-    const args = circuit.arguments.length > 0
-      ? circuit.arguments.map((a: any) => `${a.name}: ${a.type['type-name']}${a.type.length ? `<${a.type.length}>` : ''}`).join(', ')
-      : 'none'
+    const args =
+      circuit.arguments.length > 0
+        ? circuit.arguments
+            .map(
+              (a: any) =>
+                `${a.name}: ${a.type['type-name']}${a.type.length ? `<${a.type.length}>` : ''}`
+            )
+            .join(', ')
+        : 'none'
     console.log(`  📌 ${circuit.name}`)
     console.log(`     Arguments:  ${args}`)
     console.log(`     Returns:    ${circuit['result-type']['type-name']}`)
@@ -77,9 +85,10 @@ function main() {
   console.log('  Private Witnesses (never on-chain):')
   console.log('  ──────────────────────────────────────')
   for (const witness of contractInfo.witnesses) {
-    const args = witness.arguments.length > 0
-      ? witness.arguments.map((a: any) => `${a.name}: ${a.type['type-name']}`).join(', ')
-      : 'none'
+    const args =
+      witness.arguments.length > 0
+        ? witness.arguments.map((a: any) => `${a.name}: ${a.type['type-name']}`).join(', ')
+        : 'none'
     console.log(`  🔒 ${witness.name}(${args})`)
   }
   console.log('')
@@ -94,7 +103,8 @@ function main() {
     if (field.storage === 'Map' && field.key && field.value) {
       // Map type: key and value are directly on the field
       const keyType = field.key['type-name'] + (field.key.length ? `<${field.key.length}>` : '')
-      const valueType = field.value['type-name'] + (field.value.length ? `<${field.value.length}>` : '')
+      const valueType =
+        field.value['type-name'] + (field.value.length ? `<${field.value.length}>` : '')
       typeName = 'Map'
       extra = `<${keyType}, ${valueType}>`
     } else if (field.type) {
@@ -110,7 +120,9 @@ function main() {
       typeName = 'unknown'
     }
 
-    const sealed = !['tenderStatus', 'lowestDisclosedBid', 'carrierCommitments'].includes(field.name)
+    const sealed = !['tenderStatus', 'lowestDisclosedBid', 'carrierCommitments'].includes(
+      field.name
+    )
       ? ' (sealed)'
       : ''
     console.log(`  📋 ${field.name}: ${typeName}${extra}${sealed}`)
@@ -124,7 +136,7 @@ function main() {
 
   const keysDir = resolve(MANAGED_DIR, 'keys')
   if (existsSync(keysDir)) {
-    const proverFiles = readdirSync(keysDir).filter(f => f.endsWith('.prover'))
+    const proverFiles = readdirSync(keysDir).filter((f) => f.endsWith('.prover'))
     console.log('  Circuit Keys:')
     for (const f of proverFiles) {
       const name = f.replace('.prover', '')
@@ -135,7 +147,7 @@ function main() {
 
   const zkirDir = resolve(MANAGED_DIR, 'zkir')
   if (existsSync(zkirDir)) {
-    const zkirFiles = readdirSync(zkirDir).filter(f => f.endsWith('.zkir'))
+    const zkirFiles = readdirSync(zkirDir).filter((f) => f.endsWith('.zkir'))
     console.log('  ZK Intermediate Representations:')
     for (const f of zkirFiles) {
       console.log(`    ✅ ${f}`)
@@ -161,7 +173,12 @@ function main() {
     // Extract key lines from vitest output
     const lines = output.split('\n')
     for (const line of lines) {
-      if (line.includes('✓') || line.includes('Tests') || line.includes('Test Files') || line.includes('Duration')) {
+      if (
+        line.includes('✓') ||
+        line.includes('Tests') ||
+        line.includes('Test Files') ||
+        line.includes('Duration')
+      ) {
         console.log(`  ${line.trim()}`)
       }
     }

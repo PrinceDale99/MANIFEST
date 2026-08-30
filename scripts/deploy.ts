@@ -13,7 +13,7 @@
 //   npm run deploy -- --address <REAL_ADDRESS>  → save a deployed address
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { writeFileSync, existsSync, readFileSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 
 const ROOT_DIR = resolve(import.meta.dirname, '..')
@@ -73,12 +73,19 @@ function deployToNetwork(network: string): string {
     console.log(`✅ Using provided address: ${providedAddress}\n`)
 
     // Save deployment info
-    writeFileSync(deploymentFile, JSON.stringify({
-      network,
-      contractAddress: providedAddress,
-      deployedAt: new Date().toISOString(),
-      isUpgrade,
-    }, null, 2))
+    writeFileSync(
+      deploymentFile,
+      JSON.stringify(
+        {
+          network,
+          contractAddress: providedAddress,
+          deployedAt: new Date().toISOString(),
+          isUpgrade,
+        },
+        null,
+        2
+      )
+    )
     console.log(`📝 Saved to .deployment.${network}.json\n`)
 
     // Update README

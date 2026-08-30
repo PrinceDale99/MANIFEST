@@ -7,10 +7,10 @@
 // 3. That private inputs are never exposed
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from 'vitest'
-import { Contract as ManifestContract } from '../frontend/src/managed/contract/index.js'
-import * as ledger from '@midnight-ntwrk/ledger-v8'
 import * as cr from '@midnight-ntwrk/compact-runtime'
+import * as ledger from '@midnight-ntwrk/ledger-v8'
+import { describe, expect, it } from 'vitest'
+import { Contract as ManifestContract } from '../frontend/src/managed/contract/index.js'
 
 describe('Manifest Compact Smart Contract Test Suite (counter.test.ts)', () => {
   const tenderId = new Uint8Array(32).fill(0xaa)
@@ -57,7 +57,9 @@ describe('Manifest Compact Smart Contract Test Suite (counter.test.ts)', () => {
       // Cell 2: loadHash
       expect(stateArr[2].asCell().value[0] || stateArr[2].asCell().value).toEqual(loadHash)
       // Cell 3: reservePriceCommitment
-      expect(stateArr[3].asCell().value[0] || stateArr[3].asCell().value).toEqual(reservePriceCommitment)
+      expect(stateArr[3].asCell().value[0] || stateArr[3].asCell().value).toEqual(
+        reservePriceCommitment
+      )
     })
 
     it('executes submitBidCommitment circuit and computes valid ZK state updates', () => {
@@ -231,7 +233,12 @@ describe('Manifest Compact Smart Contract Test Suite (counter.test.ts)', () => {
       )
 
       // Open bidding
-      const openCtx = cr.createCircuitContext(contractAddress, dummyCoinPk, initial.currentContractState.data, {})
+      const openCtx = cr.createCircuitContext(
+        contractAddress,
+        dummyCoinPk,
+        initial.currentContractState.data,
+        {}
+      )
       const openRes = shipperContract.circuits.openBidding(openCtx)
 
       // Carrier creates private bid
@@ -252,7 +259,11 @@ describe('Manifest Compact Smart Contract Test Suite (counter.test.ts)', () => {
         {}
       )
 
-      const bidRes = carrierContract.circuits.submitBidCommitment(carrierContext, privateBidAmount, privateSalt)
+      const bidRes = carrierContract.circuits.submitBidCommitment(
+        carrierContext,
+        privateBidAmount,
+        privateSalt
+      )
 
       // Inspect public transcript / output
       const publicOutput = bidRes.proofData.publicTranscript

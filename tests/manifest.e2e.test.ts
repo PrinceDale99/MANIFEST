@@ -3,7 +3,7 @@
 // Multi-party auction simulation: 1 Shipper, 3 Carriers
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { generateBidCommitment, verifyCommitment } from '../frontend/src/lib/crypto/commitment'
 import { TenderStatus } from '../frontend/src/types/manifest'
 
@@ -41,7 +41,7 @@ describe('Multi-Party Sealed-Bid Auction E2E', () => {
       shipper: 'shipper_pk_001',
       loadHash: 'load_hash_chicago_to_dallas',
       status: TenderStatus.DRAFT,
-      lowestDisclosedBid: 0xFFFFFFFFFFFFFFFFn,
+      lowestDisclosedBid: 0xffffffffffffffffn,
       carrierCommitments: new Map(),
     }
 
@@ -103,7 +103,7 @@ describe('Multi-Party Sealed-Bid Auction E2E', () => {
   })
 
   it('Phase 5: Carriers reveal bids (ZK proof verification)', async () => {
-    const SENTINEL = 0xFFFFFFFFFFFFFFFFn
+    const SENTINEL = 0xffffffffffffffffn
     let lowestBid = SENTINEL
     let awardedCarrier = 'none'
 
@@ -145,8 +145,8 @@ describe('Multi-Party Sealed-Bid Auction E2E', () => {
   })
 
   it('Phase 6: Reject tampered reveals', async () => {
-    const SENTINEL = 0xFFFFFFFFFFFFFFFFn
-    let lowestBid = SENTINEL
+    const SENTINEL = 0xffffffffffffffffn
+    const lowestBid = SENTINEL
 
     // Carrier Swift tries to cheat by revealing a lower bid than committed
     const cheatingBid = {
@@ -199,8 +199,8 @@ describe('Multi-Party Sealed-Bid Auction E2E', () => {
           carrierPk: c.pk,
           bidAmount: c.bidAmount,
           salt: c.salt,
-        }),
-      ),
+        })
+      )
     )
 
     // Even after all reveals, the commitment hashes don't
@@ -217,7 +217,7 @@ describe('Multi-Party Sealed-Bid Auction E2E', () => {
     // The only public information is the lowest bid
     // All other bid values remain private
     const revealedBids = carriers
-      .filter((c) => c.bidAmount < 0xFFFFFFFFFFFFFFFFn)
+      .filter((c) => c.bidAmount < 0xffffffffffffffffn)
       .sort((a, b) => Number(a.bidAmount - b.bidAmount))
 
     // Only the winner's bid becomes the public "lowestDisclosedBid"

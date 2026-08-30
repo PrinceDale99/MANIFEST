@@ -69,7 +69,9 @@ async function main() {
   for (let i = 0; i < DEMO_TENDERS.length; i++) {
     const tender = DEMO_TENDERS[i]
     console.log(`📦 [${i + 1}/${DEMO_TENDERS.length}] ${tender.origin} → ${tender.destination}`)
-    console.log(`   Equipment: ${tender.equipmentType} | Weight: ${tender.weightLbs.toLocaleString()} lbs`)
+    console.log(
+      `   Equipment: ${tender.equipmentType} | Weight: ${tender.weightLbs.toLocaleString()} lbs`
+    )
 
     try {
       // In production: deploy via compact-cli
