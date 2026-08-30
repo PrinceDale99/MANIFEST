@@ -41,6 +41,18 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
+#### What an Observer CAN Learn (Public On-Chain Data)
+* **Tender Existence & Parameters**: Auction ID, shipper public key, origin/destination payload hash (`loadHash`), reserve price commitment hash, and bidding/reveal block timestamps.
+* **Auction Lifecycle Phase**: Current phase (`DRAFT`, `BIDDING_OPEN`, `REVEAL_PHASE`, `SETTLED`, or `CANCELLED`).
+* **Participant Activity**: Total count of participating carriers and their individual sealed commitment hashes (`hash(tenderId, carrierPk, amount, salt)`).
+* **Final Settlement Outcome**: Upon auction conclusion, the single winning rate (`lowestDisclosedBid`) and the awarded carrier public key.
+
+#### What an Observer CANNOT Learn (Protected Zero-Knowledge State)
+* **Losing Carrier Bid Amounts**: Losing bids remain 100% confidential and are never revealed or stored on-chain.
+* **Bidder Rate Margins & Pricing Strategies**: Competitor carriers and third-party brokers cannot inspect submitted bids during or after the bidding window.
+* **Preimages & Cryptographic Salts**: Carrier private salts and private keys (`local_secret_key()`) never leave the local client witness memory.
+* **Unrevealed Bids & Collusion Vectors**: Without the carrier's secret preimage, no party can reverse-engineer bids or front-run pricing.
+
 ### Auction Flow
 
 1. **Shipper Creates Tender** → Load specs hashed, bidding window set
@@ -118,6 +130,9 @@ curl -s http://localhost:6300/health
 npm test
 ```
 
+![Manifest Compact Contract Test Suite Output](public/testcmd.png)
+
+
 ### 5. Start Frontend
 
 ```bash
@@ -185,7 +200,9 @@ For AI-assisted development with the Midnight MCP server:
 
 ## Screenshots
 
-<!-- TODO: Add screenshots of the marketplace, bidding room, and audit explorer -->
+### Smart Contract & Compact Circuit Test Suite
+![Manifest Test Suite Output](public/testcmd.png)
+
 
 ---
 
