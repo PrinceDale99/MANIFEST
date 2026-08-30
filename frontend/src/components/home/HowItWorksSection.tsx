@@ -1,184 +1,191 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  FileText,
+  Lock,
+  Eye,
+  Trophy,
+  ArrowRight,
+  ShieldCheck,
+  Cpu,
+  CheckCircle2,
+  Sparkles
+} from 'lucide-react'
 
 const steps = [
   {
     number: '01',
-    title: 'Shipper posts a tender',
-    description: 'Describe what you need shipped — origin, destination, equipment type. The load details are hashed and stored on-chain.',
-    icon: '📋',
+    title: 'Shipper Posts a Tender',
+    description: 'Enter origin, destination, cargo specifications, and auction window. The load details are hashed into a 32-byte load commitment.',
+    icon: FileText,
     color: 'emerald',
-    detail: 'Your load specs are never fully exposed. Only a cryptographic hash goes on the public ledger, keeping your cargo details private.',
+    gradient: 'from-emerald-500 to-teal-600',
+    detail: 'Your load specifications are never publicly leaked. Only a cryptographic hash goes onto the public ledger, protecting shipper confidentiality.',
+    circuitName: 'openBidding()',
   },
   {
     number: '02',
-    title: 'Carriers submit sealed bids',
-    description: 'Each carrier enters their rate. A mathematical seal (commitment) is created — no one can see the bid amount, not even the shipper.',
-    icon: '🔒',
+    title: 'Carriers Submit Sealed Bids',
+    description: 'Each carrier generates a private bid along with a random 256-bit salt. A cryptographic commitment H(bid, salt) is recorded on-chain.',
+    icon: Lock,
     color: 'cyan',
-    detail: 'The bid amount is a private witness. Only the commitment hash (a one-way mathematical fingerprint) is stored on the blockchain.',
+    gradient: 'from-cyan-500 to-blue-600',
+    detail: 'The bid amount is a private zero-knowledge witness. Neither competitor carriers nor the shipper can view the rate during the bidding window.',
+    circuitName: 'submitBidCommitment()',
   },
   {
     number: '03',
-    title: 'Reveal phase opens',
-    description: 'After bidding closes, carriers prove their sealed bid matches what they actually submitted — without revealing the salt.',
-    icon: '🔓',
+    title: 'Reveal Phase Opens',
+    description: 'When bidding concludes, carriers execute a ZK proof to disclose their rate and prove it matches the initial sealed commitment.',
+    icon: Eye,
     color: 'violet',
-    detail: 'Using zero-knowledge proofs, carriers demonstrate they know the secret behind their commitment without exposing it to anyone.',
+    gradient: 'from-violet-500 to-purple-600',
+    detail: 'Zero-knowledge proofs mathematically verify that the revealed bid is genuine and hasn’t been altered after seeing other submissions.',
+    circuitName: 'revealBid()',
   },
   {
     number: '04',
-    title: 'Lowest bid wins',
-    description: 'The smart contract automatically selects the lowest valid bid. The winner is declared and the tender is settled.',
-    icon: '🏆',
+    title: 'Instant Fair Settlement',
+    description: 'The smart contract verifies all revealed bids, automatically selects the lowest qualified carrier, and declares the winner.',
+    icon: Trophy,
     color: 'amber',
-    detail: 'Settlement is automatic and provably fair. Every step is recorded on-chain for public audit — no disputes possible.',
+    gradient: 'from-amber-500 to-yellow-600',
+    detail: 'Winner selection is deterministic and verifiable by anyone on the public Midnight Preview blockchain with 0% broker fee cuts.',
+    circuitName: 'settleTender()',
   },
 ]
 
-const colorMap = {
-  emerald: {
-    bg: 'bg-emerald-900/20',
-    border: 'border-emerald-800',
-    text: 'text-emerald-400',
-    glow: 'shadow-emerald-500/20',
-    activeBg: 'bg-emerald-900/30',
-  },
-  cyan: {
-    bg: 'bg-cyan-900/20',
-    border: 'border-cyan-800',
-    text: 'text-cyan-400',
-    glow: 'shadow-cyan-500/20',
-    activeBg: 'bg-cyan-900/30',
-  },
-  violet: {
-    bg: 'bg-violet-900/20',
-    border: 'border-violet-800',
-    text: 'text-violet-400',
-    glow: 'shadow-violet-500/20',
-    activeBg: 'bg-violet-900/30',
-  },
-  amber: {
-    bg: 'bg-amber-900/20',
-    border: 'border-amber-800',
-    text: 'text-amber-400',
-    glow: 'shadow-amber-500/20',
-    activeBg: 'bg-amber-900/30',
-  },
-}
-
 export default function HowItWorksSection() {
   const [activeStep, setActiveStep] = useState(0)
+  const current = steps[activeStep]
+  const CurrentIcon = current.icon
 
   return (
-    <section className="relative py-24 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-zinc-900/30 to-zinc-950" />
-
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="relative py-20 overflow-hidden">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Section header */}
-        <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-white sm:text-4xl">
-            How Manifest works
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-100 border border-white/10 text-xs font-semibold text-zinc-300">
+            <Cpu className="h-3.5 w-3.5 text-cyan-400" />
+            Decentralized Protocol Architecture
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+            How Zero-Knowledge Freight Works
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-zinc-400">
-            Four simple steps. Fully private. Mathematically fair.
+          <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto">
+            Four simple phases. Zero data leaks. 100% mathematical integrity on Midnight.
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* Left: Step cards */}
-          <div className="space-y-4">
+        <div className="grid gap-8 lg:grid-cols-12 items-start">
+          {/* Left: Step selectors (7 cols) */}
+          <div className="lg:col-span-7 space-y-3.5">
             {steps.map((step, index) => {
-              const colors = colorMap[step.color as keyof typeof colorMap]
+              const Icon = step.icon
               const isActive = index === activeStep
 
               return (
-                <button
+                <motion.button
                   key={step.number}
                   onClick={() => setActiveStep(index)}
-                  className={`w-full text-left rounded-xl border p-5 transition-all ${
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  className={`w-full text-left rounded-2xl p-5 transition-all border ${
                     isActive
-                      ? `${colors.activeBg} ${colors.border} shadow-lg ${colors.glow}`
-                      : 'border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 hover:bg-zinc-900/50'
+                      ? 'glass-card border-emerald-500/40 shadow-xl shadow-emerald-500/10 bg-surface-100/90'
+                      : 'border-white/5 bg-surface-100/40 hover:bg-surface-100/80 hover:border-white/10'
                   }`}
                 >
                   <div className="flex items-start gap-4">
                     <div
-                      className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-lg ${
-                        isActive ? colors.bg : 'bg-zinc-800'
-                      }`}
+                      className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${
+                        step.gradient
+                      } text-white shadow-md`}
                     >
-                      {step.icon}
+                      <Icon className="h-5 w-5" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`font-mono text-xs ${colors.text}`}>{step.number}</span>
-                        <h3 className={`text-base font-semibold ${isActive ? 'text-white' : 'text-zinc-300'}`}>
-                          {step.title}
-                        </h3>
+
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-emerald-400">PHASE {step.number}</span>
+                          <span className="text-zinc-600">•</span>
+                          <span className="font-mono text-[11px] text-zinc-400">{step.circuitName}</span>
+                        </div>
+                        {isActive && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            Active
+                          </span>
+                        )}
                       </div>
-                      <p className="text-sm text-zinc-400">{step.description}</p>
+                      <h3 className={`text-base font-bold ${isActive ? 'text-white' : 'text-zinc-300'}`}>
+                        {step.title}
+                      </h3>
+                      <p className="text-xs text-zinc-400 leading-relaxed">{step.description}</p>
                     </div>
-                    <svg
-                      className={`h-5 w-5 flex-shrink-0 transition-transform ${isActive ? 'rotate-90' : ''} ${colors.text}`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
                   </div>
-                </button>
+                </motion.button>
               )
             })}
           </div>
 
-          {/* Right: Detail panel */}
-          <div className="relative">
-            <div className="sticky top-24 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8">
-              {/* Step visual */}
-              <div className="mb-6 flex items-center gap-4">
-                <div
-                  className={`flex h-16 w-16 items-center justify-center rounded-2xl text-3xl ${
-                    colorMap[steps[activeStep].color as keyof typeof colorMap].bg
-                  }`}
-                >
-                  {steps[activeStep].icon}
+          {/* Right: Technical Inspector (5 cols) */}
+          <div className="lg:col-span-5 sticky top-24">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeStep}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25 }}
+                className="rounded-2xl glass-card border border-white/10 p-6 md:p-8 space-y-6 shadow-2xl"
+              >
+                {/* Header with Circuit Icon */}
+                <div className="flex items-center gap-4 border-b border-white/10 pb-5">
+                  <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${current.gradient} text-white shadow-lg`}>
+                    <CurrentIcon className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <div className="font-mono text-xs font-bold text-emerald-400">PHASE {current.number} SPECIFICATION</div>
+                    <h3 className="text-lg font-bold text-white">{current.title}</h3>
+                  </div>
                 </div>
-                <div>
-                  <span className={`font-mono text-sm ${colorMap[steps[activeStep].color as keyof typeof colorMap].text}`}>
-                    Step {steps[activeStep].number}
-                  </span>
-                  <h3 className="text-xl font-bold text-white">{steps[activeStep].title}</h3>
+
+                {/* Circuit Details */}
+                <div className="space-y-3">
+                  <div className="p-4 rounded-xl bg-surface-100 border border-white/5 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
+                      <span>On-Chain Compact Circuit</span>
+                      <span className="font-mono text-emerald-400 font-semibold">{current.circuitName}</span>
+                    </div>
+                    <p className="text-xs text-zinc-300 leading-relaxed">{current.detail}</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Description */}
-              <p className="mb-6 text-zinc-400">{steps[activeStep].description}</p>
-
-              {/* Technical detail */}
-              <div className="rounded-xl border border-zinc-700 bg-zinc-800/50 p-4">
-                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                  Under the hood
-                </h4>
-                <p className="text-sm text-zinc-300">{steps[activeStep].detail}</p>
-              </div>
-
-              {/* Progress indicator */}
-              <div className="mt-6 flex gap-2">
-                {steps.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`h-1 flex-1 rounded-full transition-colors ${
-                      index <= activeStep
-                        ? colorMap[steps[activeStep].color as keyof typeof colorMap].text.replace('text-', 'bg-')
-                        : 'bg-zinc-800'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
+                {/* Cryptographic Guarantees */}
+                <div className="space-y-2 pt-2 border-t border-white/10">
+                  <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                    Cryptographic Guarantees
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 text-xs text-zinc-300">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                      <span>Zero front-running & snipe-proof</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-cyan-400 flex-shrink-0" />
+                      <span>Automated lowest-bid contract verification</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-violet-400 flex-shrink-0" />
+                      <span>Publicly audit-ready on Midnight Ledger</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>

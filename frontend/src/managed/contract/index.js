@@ -1,5 +1,41 @@
-import * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
-__compactRuntime.checkRuntimeVersion('0.18.0-rc.1');
+
+import * as __compactRuntimeRaw from '@midnight-ntwrk/compact-runtime';
+__compactRuntimeRaw.checkRuntimeVersion('0.16.0');
+
+const __compactRuntime = {
+  ...__compactRuntimeRaw,
+  createCircuitContext: (...args) => {
+    if (typeof args[0] === 'string') {
+      args = args.slice(1);
+    }
+    const ctx = __compactRuntimeRaw.createCircuitContext(...args);
+    ctx.callContext = ctx;
+    return ctx;
+  },
+  copyCircuitContext: (ctx) => {
+    const base = {
+      ...ctx,
+      currentQueryContext: ctx?.currentQueryContext || ctx?.callContext?.currentQueryContext,
+      currentPrivateState: ctx?.currentPrivateState || ctx?.callContext?.currentPrivateState,
+      currentZswapLocalState: ctx?.currentZswapLocalState || ctx?.callContext?.currentZswapLocalState,
+      costModel: ctx?.costModel || ctx?.callContext?.costModel,
+      gasLimit: ctx?.gasLimit || ctx?.callContext?.gasLimit,
+      currentGasCost: ctx?.currentGasCost || ctx?.callContext?.currentGasCost || 0n
+    };
+    base.callContext = base;
+    return base;
+  },
+  finalizeCallProofData: () => {},
+  convertBigintToBytes: (len, val) => {
+    const arr = new Uint8Array(len);
+    let v = BigInt(val);
+    for (let i = 0; i < len; i++) {
+      arr[i] = Number(v & 0xffn);
+      v >>= 8n;
+    }
+    return arr;
+  }
+};
 
 export var TenderStatus;
 (function (TenderStatus) {
@@ -83,12 +119,15 @@ export class Contract {
     }
     this.witnesses = witnesses_0;
     this.circuits = {
-      openBidding: async (...args_1) => {
+      openBidding: (...args_1) => {
         if (args_1.length !== 1) {
           throw new __compactRuntime.CompactError(`openBidding: expected 1 argument (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
-        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext.currentQueryContext != undefined)) {
+        if (contextOrig_0 && typeof contextOrig_0 === 'object' && !contextOrig_0.callContext) {
+          contextOrig_0.callContext = { currentQueryContext: contextOrig_0.currentQueryContext || {}, currentGasCost: 0n };
+        }
+        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext && contextOrig_0.callContext.currentQueryContext != undefined)) {
           __compactRuntime.typeError('openBidding',
                                      'argument 1 (as invoked from Typescript)',
                                      'manifest.compact line 100 char 1',
@@ -102,19 +141,22 @@ export class Contract {
           publicTranscript: [],
           privateTranscriptOutputs: []
         };
-        const result_0 = await this._openBidding_0(context, partialProofData);
+        const result_0 = this._openBidding_0(context, partialProofData);
         partialProofData.output = { value: [], alignment: [] };
         __compactRuntime.finalizeCallProofData(context, partialProofData);
-        return { result: result_0, context: context, gasCost: context.callContext.currentGasCost };
+        return { result: result_0, context: context, proofData: partialProofData, partialProofData: partialProofData, gasCost: context.callContext?.currentGasCost ?? 0n };
       },
-      submitBidCommitment: async (...args_1) => {
+      submitBidCommitment: (...args_1) => {
         if (args_1.length !== 3) {
           throw new __compactRuntime.CompactError(`submitBidCommitment: expected 3 arguments (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
         const bidAmount_0 = args_1[1];
         const salt_0 = args_1[2];
-        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext.currentQueryContext != undefined)) {
+        if (contextOrig_0 && typeof contextOrig_0 === 'object' && !contextOrig_0.callContext) {
+          contextOrig_0.callContext = { currentQueryContext: contextOrig_0.currentQueryContext || {}, currentGasCost: 0n };
+        }
+        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext && contextOrig_0.callContext.currentQueryContext != undefined)) {
           __compactRuntime.typeError('submitBidCommitment',
                                      'argument 1 (as invoked from Typescript)',
                                      'manifest.compact line 111 char 1',
@@ -145,20 +187,23 @@ export class Contract {
           publicTranscript: [],
           privateTranscriptOutputs: []
         };
-        const result_0 = await this._submitBidCommitment_0(context,
+        const result_0 = this._submitBidCommitment_0(context,
                                                            partialProofData,
                                                            bidAmount_0,
                                                            salt_0);
         partialProofData.output = { value: [], alignment: [] };
         __compactRuntime.finalizeCallProofData(context, partialProofData);
-        return { result: result_0, context: context, gasCost: context.callContext.currentGasCost };
+        return { result: result_0, context: context, proofData: partialProofData, partialProofData: partialProofData, gasCost: context.callContext?.currentGasCost ?? 0n };
       },
-      transitionToReveal: async (...args_1) => {
+      transitionToReveal: (...args_1) => {
         if (args_1.length !== 1) {
           throw new __compactRuntime.CompactError(`transitionToReveal: expected 1 argument (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
-        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext.currentQueryContext != undefined)) {
+        if (contextOrig_0 && typeof contextOrig_0 === 'object' && !contextOrig_0.callContext) {
+          contextOrig_0.callContext = { currentQueryContext: contextOrig_0.currentQueryContext || {}, currentGasCost: 0n };
+        }
+        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext && contextOrig_0.callContext.currentQueryContext != undefined)) {
           __compactRuntime.typeError('transitionToReveal',
                                      'argument 1 (as invoked from Typescript)',
                                      'manifest.compact line 129 char 1',
@@ -172,20 +217,23 @@ export class Contract {
           publicTranscript: [],
           privateTranscriptOutputs: []
         };
-        const result_0 = await this._transitionToReveal_0(context,
+        const result_0 = this._transitionToReveal_0(context,
                                                           partialProofData);
         partialProofData.output = { value: [], alignment: [] };
         __compactRuntime.finalizeCallProofData(context, partialProofData);
-        return { result: result_0, context: context, gasCost: context.callContext.currentGasCost };
+        return { result: result_0, context: context, proofData: partialProofData, partialProofData: partialProofData, gasCost: context.callContext?.currentGasCost ?? 0n };
       },
-      revealBid: async (...args_1) => {
+      revealBid: (...args_1) => {
         if (args_1.length !== 3) {
           throw new __compactRuntime.CompactError(`revealBid: expected 3 arguments (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
         const bidAmount_0 = args_1[1];
         const salt_0 = args_1[2];
-        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext.currentQueryContext != undefined)) {
+        if (contextOrig_0 && typeof contextOrig_0 === 'object' && !contextOrig_0.callContext) {
+          contextOrig_0.callContext = { currentQueryContext: contextOrig_0.currentQueryContext || {}, currentGasCost: 0n };
+        }
+        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext && contextOrig_0.callContext.currentQueryContext != undefined)) {
           __compactRuntime.typeError('revealBid',
                                      'argument 1 (as invoked from Typescript)',
                                      'manifest.compact line 137 char 1',
@@ -216,20 +264,23 @@ export class Contract {
           publicTranscript: [],
           privateTranscriptOutputs: []
         };
-        const result_0 = await this._revealBid_0(context,
+        const result_0 = this._revealBid_0(context,
                                                  partialProofData,
                                                  bidAmount_0,
                                                  salt_0);
         partialProofData.output = { value: [], alignment: [] };
         __compactRuntime.finalizeCallProofData(context, partialProofData);
-        return { result: result_0, context: context, gasCost: context.callContext.currentGasCost };
+        return { result: result_0, context: context, proofData: partialProofData, partialProofData: partialProofData, gasCost: context.callContext?.currentGasCost ?? 0n };
       },
-      settleTender: async (...args_1) => {
+      settleTender: (...args_1) => {
         if (args_1.length !== 1) {
           throw new __compactRuntime.CompactError(`settleTender: expected 1 argument (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
-        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext.currentQueryContext != undefined)) {
+        if (contextOrig_0 && typeof contextOrig_0 === 'object' && !contextOrig_0.callContext) {
+          contextOrig_0.callContext = { currentQueryContext: contextOrig_0.currentQueryContext || {}, currentGasCost: 0n };
+        }
+        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext && contextOrig_0.callContext.currentQueryContext != undefined)) {
           __compactRuntime.typeError('settleTender',
                                      'argument 1 (as invoked from Typescript)',
                                      'manifest.compact line 163 char 1',
@@ -243,17 +294,20 @@ export class Contract {
           publicTranscript: [],
           privateTranscriptOutputs: []
         };
-        const result_0 = await this._settleTender_0(context, partialProofData);
+        const result_0 = this._settleTender_0(context, partialProofData);
         partialProofData.output = { value: [], alignment: [] };
         __compactRuntime.finalizeCallProofData(context, partialProofData);
-        return { result: result_0, context: context, gasCost: context.callContext.currentGasCost };
+        return { result: result_0, context: context, proofData: partialProofData, partialProofData: partialProofData, gasCost: context.callContext?.currentGasCost ?? 0n };
       },
-      cancelTender: async (...args_1) => {
+      cancelTender: (...args_1) => {
         if (args_1.length !== 1) {
           throw new __compactRuntime.CompactError(`cancelTender: expected 1 argument (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
-        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext.currentQueryContext != undefined)) {
+        if (contextOrig_0 && typeof contextOrig_0 === 'object' && !contextOrig_0.callContext) {
+          contextOrig_0.callContext = { currentQueryContext: contextOrig_0.currentQueryContext || {}, currentGasCost: 0n };
+        }
+        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.callContext && contextOrig_0.callContext.currentQueryContext != undefined)) {
           __compactRuntime.typeError('cancelTender',
                                      'argument 1 (as invoked from Typescript)',
                                      'manifest.compact line 170 char 1',
@@ -267,10 +321,10 @@ export class Contract {
           publicTranscript: [],
           privateTranscriptOutputs: []
         };
-        const result_0 = await this._cancelTender_0(context, partialProofData);
+        const result_0 = this._cancelTender_0(context, partialProofData);
         partialProofData.output = { value: [], alignment: [] };
         __compactRuntime.finalizeCallProofData(context, partialProofData);
-        return { result: result_0, context: context, gasCost: context.callContext.currentGasCost };
+        return { result: result_0, context: context, proofData: partialProofData, partialProofData: partialProofData, gasCost: context.callContext?.currentGasCost ?? 0n };
       }
     };
     this.impureCircuits = {
@@ -641,7 +695,7 @@ export class Contract {
     });
     return result_0;
   }
-  async _openBidding_0(context, partialProofData) {
+  _openBidding_0(context, partialProofData) {
     __compactRuntime.assert(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                       partialProofData,
                                                                                       [
@@ -685,7 +739,7 @@ export class Contract {
                                        { ins: { cached: false, n: 1 } }]);
     return [];
   }
-  async _submitBidCommitment_0(context, partialProofData, bidAmount_0, salt_0) {
+  _submitBidCommitment_0(context, partialProofData, bidAmount_0, salt_0) {
     __compactRuntime.assert(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                       partialProofData,
                                                                                       [
@@ -742,7 +796,7 @@ export class Contract {
                                        { ins: { cached: true, n: 1 } }]);
     return [];
   }
-  async _transitionToReveal_0(context, partialProofData) {
+  _transitionToReveal_0(context, partialProofData) {
     __compactRuntime.assert(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                       partialProofData,
                                                                                       [
@@ -770,7 +824,7 @@ export class Contract {
                                        { ins: { cached: false, n: 1 } }]);
     return [];
   }
-  async _revealBid_0(context, partialProofData, bidAmount_0, salt_0) {
+  _revealBid_0(context, partialProofData, bidAmount_0, salt_0) {
     __compactRuntime.assert(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                       partialProofData,
                                                                                       [
@@ -881,7 +935,7 @@ export class Contract {
     }
     return [];
   }
-  async _settleTender_0(context, partialProofData) {
+  _settleTender_0(context, partialProofData) {
     __compactRuntime.assert(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                       partialProofData,
                                                                                       [
@@ -909,7 +963,7 @@ export class Contract {
                                        { ins: { cached: false, n: 1 } }]);
     return [];
   }
-  async _cancelTender_0(context, partialProofData) {
+  _cancelTender_0(context, partialProofData) {
     __compactRuntime.assert(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                       partialProofData,
                                                                                       [

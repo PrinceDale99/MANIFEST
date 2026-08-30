@@ -1,7 +1,20 @@
 // @ts-nocheck
 'use client'
 
-import { useState } from 'react'; 
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import {
+  ShieldCheck,
+  Cpu,
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  Copy,
+  Check,
+  AlertCircle,
+  ExternalLink
+} from 'lucide-react'
 import { initializeMidnightProviders, NETWORK_ID } from '@/lib/midnight/sdk'
 import { Contract as ManifestContract } from '../managed/contract/index.js'
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts'
@@ -10,15 +23,17 @@ import { CompiledContract } from '@midnight-ntwrk/compact-js'
 export default function DeployPage() {
   const [status, setStatus] = useState<string>('Idle')
   const [contractAddress, setContractAddress] = useState<string>('')
+  const [copied, setCopied] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleDeploy = async () => {
     try {
-      setStatus('Connecting to 1am Wallet & Providers...')
+      setLoading(true)
+      setStatus('Connecting to 1AM Wallet & Midnight Providers...')
       const providers = await initializeMidnightProviders()
-      
-      setStatus('Deploying Master Contract... Please approve the transaction in your wallet.')
 
-      // Define minimal witnesses for constructor
+      setStatus('Proving & Deploying Contract... Please approve the transaction in your 1AM wallet extension.')
+
       const witnesses = {
         local_secret_key: () => [{}, new Uint8Array(32)],
         store_bid_amount: () => [{}, []],
@@ -27,61 +42,94 @@ export default function DeployPage() {
 
       const randomBytes = () => crypto.getRandomValues(new Uint8Array(32))
 
-      // @ts-ignore
-      const _compiled = CompiledContract.make("manifest", ManifestContract); 
-      const _withWitnesses = CompiledContract.withWitnesses(_compiled, witnesses); 
-      
-      // Use realistic non-zero values to prevent Wallet UI crashes during balanceTx
+      const _compiled = CompiledContract.make('manifest', ManifestContract)
+      const _withWitnesses = CompiledContract.withWitnesses(_compiled, witnesses)
+
       const args = [
-        randomBytes(), // tenderId
-        randomBytes(), // loadHash
-        randomBytes(), // reservePriceCommitment
-        1000n,         // biddingDeadline (block height/timestamp)
-        2000n          // revealDeadline
-      ];
-      
-      const contract = await deployContract(providers, { 
-        compiledContract: _withWitnesses, 
-        initialPrivateState: {}, 
-        privateStateId: "manifest-private-state", 
-        args 
+        randomBytes(),
+        randomBytes(),
+        randomBytes(),
+        1000n,
+        2000n,
+      ]
+
+      const contract = await deployContract(providers, {
+        compiledContract: _withWitnesses,
+        initialPrivateState: {},
+        privateStateId: 'manifest-private-state',
+        args,
       })
       const deployedAddress = contract.deployTxData.public.contractAddress.toString()
-      
+
       setContractAddress(deployedAddress)
-      setStatus('Deployed successfully!')
+      setStatus('Deployed successfully on Midnight Preview!')
+      setLoading(false)
     } catch (err: any) {
-      console.error('DEPLOY ERROR', err, err?.cause, err?.cause?.message);
-      setStatus('Error: ' + (err.message || err.toString()) + ' | CAUSE: ' + (err.cause?.message || err.cause || 'none'))
+      console.error('DEPLOY ERROR', err)
+      setStatus('Error: ' + (err.message || err.toString()))
+      setLoading(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-8">
-      <div className="max-w-md w-full bg-gray-800 rounded-lg p-6 shadow-xl border border-gray-700">
-        <h1 className="text-2xl font-bold mb-4 text-emerald-400">Deploy Master Contract</h1>
-        <p className="text-gray-400 mb-6">
-          This will use your connected 1am wallet ({NETWORK_ID}) to deploy the Manifest master contract.
-        </p>
+  const copyAddress = () => {
+    navigator.clipboard.writeText(contractAddress)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
+  return (
+    <div className="max-w-xl mx-auto px-4 py-16 space-y-8">
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400">
+          <Cpu className="h-3.5 w-3.5" />
+          Master Contract Deployment
+        </div>
+        <h1 className="text-3xl font-extrabold text-white">Deploy Manifest Protocol</h1>
+        <p className="text-xs text-zinc-400">
+          Deploy a fresh Compact master contract to Midnight Network ({NETWORK_ID}).
+        </p>
+      </div>
+
+      <div className="rounded-3xl glass-card border border-white/10 p-6 sm:p-8 space-y-6 shadow-2xl">
         <button
           onClick={handleDeploy}
-          className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-medium transition-colors mb-4"
+          disabled={loading}
+          className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-emerald-400 hover:from-emerald-400 hover:to-cyan-300 text-black font-bold text-xs shadow-xl shadow-emerald-500/25 transition-all hover:scale-[1.02] disabled:opacity-50"
         >
-          Deploy Contract
+          {loading ? 'Deploying to Midnight...' : '🚀 Deploy Master Contract'}
         </button>
 
-        <div className="bg-gray-900 p-4 rounded text-sm text-gray-300 font-mono break-all">
-          Status: {status}
+        <div className="p-4 rounded-xl bg-surface-100 border border-white/5 space-y-1 text-xs">
+          <span className="text-zinc-500 font-mono">Status:</span>
+          <p className="font-mono text-zinc-300 break-all">{status}</p>
         </div>
 
         {contractAddress && (
-          <div className="mt-4 p-4 border border-emerald-500 bg-emerald-900/20 rounded">
-            <h3 className="text-emerald-400 font-semibold mb-2">Deployed Address:</h3>
-            <p className="font-mono text-sm break-all">{contractAddress}</p>
-            <p className="text-xs text-gray-400 mt-2">
-              Copy this address and add it to your .env.local as NEXT_PUBLIC_CONTRACT_ADDRESS.
+          <div className="p-5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                Deployed Contract Address
+              </span>
+              <button
+                onClick={copyAddress}
+                className="inline-flex items-center gap-1 text-xs text-emerald-300 hover:text-white font-mono"
+              >
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+            <p className="font-mono text-xs text-emerald-200 break-all select-all font-semibold">
+              {contractAddress}
             </p>
+            <a
+              href={`https://explorer.1am.xyz/contract/${contractAddress}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-bold text-xs shadow-md shadow-emerald-500/20 hover:scale-[1.02] transition-all"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Verify on 1AM Explorer
+            </a>
           </div>
         )}
       </div>

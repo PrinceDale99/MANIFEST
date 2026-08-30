@@ -2,22 +2,49 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import {
+  Truck,
+  MapPin,
+  Clock,
+  DollarSign,
+  ShieldCheck,
+  Search,
+  SlidersHorizontal,
+  ChevronRight,
+  Sparkles,
+  ArrowRight,
+  Layers,
+  Thermometer,
+  Lock
+} from 'lucide-react'
 import type { Tender } from '@/types/manifest'
-import { TenderStatus } from '@/types/manifest'
+import { TenderStatus, EquipmentType } from '@/types/manifest'
 import { tenderStore } from '@/lib/indexer/tender-store'
 import StatusBadge from '@/components/ui/StatusBadge'
 import LaneDisplay from '@/components/ui/LaneDisplay'
 import EmptyState from '@/components/ui/EmptyState'
+import CountdownTimer from '@/components/ui/CountdownTimer'
+
+const EQUIPMENT_FILTERS = [
+  { id: 'all', label: 'All Equipment' },
+  { id: EquipmentType.DRY_VAN, label: 'Dry Van' },
+  { id: EquipmentType.REEFER, label: 'Reefer' },
+  { id: EquipmentType.FLATBED, label: 'Flatbed' },
+]
 
 export default function CarrierBrowsePage() {
   const [tenders, setTenders] = useState<Tender[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'bidding' | 'reveal'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'bidding' | 'reveal'>('all')
+  const [equipmentFilter, setEquipmentFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     tenderStore.start()
     const unsub = tenderStore.subscribe((t) => {
-      setTenders(t)
+      setTenders(t || [])
       setLoading(false)
     })
     return () => {
@@ -26,12 +53,24 @@ export default function CarrierBrowsePage() {
     }
   }, [])
 
-  // Filter and sort chronologically (newest first)
+  // Filter & Search
   const filteredTenders = tenders
     .filter((t) => {
-      if (filter === 'bidding') return t.status === TenderStatus.BIDDING_OPEN
-      if (filter === 'reveal') return t.status === TenderStatus.REVEAL_PHASE
+      if (statusFilter === 'bidding') return t.status === TenderStatus.BIDDING_OPEN
+      if (statusFilter === 'reveal') return t.status === TenderStatus.REVEAL_PHASE
       return t.status === TenderStatus.BIDDING_OPEN || t.status === TenderStatus.REVEAL_PHASE
+    })
+    .filter((t) => {
+      if (equipmentFilter === 'all') return true
+      return t.loadSpec?.equipmentType === equipmentFilter
+    })
+    .filter((t) => {
+      if (!searchQuery) return true
+      const q = searchQuery.toLowerCase()
+      const origin = (t.loadSpec?.origin || '').toLowerCase()
+      const dest = (t.loadSpec?.destination || '').toLowerCase()
+      const id = (t.tenderId || '').toLowerCase()
+      return origin.includes(q) || dest.includes(q) || id.includes(q)
     })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
@@ -39,119 +78,162 @@ export default function CarrierBrowsePage() {
   const revealCount = tenders.filter((t) => t.status === TenderStatus.REVEAL_PHASE).length
 
   return (
-    <div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="mb-2 text-2xl font-bold text-white">Available Auctions</h1>
-        <p className="text-sm text-zinc-400">
-          Find freight jobs and submit private bids. Your bid amount stays hidden until the reveal phase.
-        </p>
-      </div>
-
-      {/* Stats & Filters */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              filter === 'all'
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-400 hover:bg-zinc-800/50'
-            }`}
-          >
-            All ({biddingCount + revealCount})
-          </button>
-          <button
-            onClick={() => setFilter('bidding')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              filter === 'bidding'
-                ? 'bg-emerald-900/50 text-emerald-400'
-                : 'text-zinc-400 hover:bg-zinc-800/50'
-            }`}
-          >
-            Accepting Bids ({biddingCount})
-          </button>
-          <button
-            onClick={() => setFilter('reveal')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              filter === 'reveal'
-                ? 'bg-amber-900/50 text-amber-400'
-                : 'text-zinc-400 hover:bg-zinc-800/50'
-            }`}
-          >
-            Revealing ({revealCount})
-          </button>
-        </div>
-        <p className="text-xs text-zinc-500">
-          {filteredTenders.length} auction{filteredTenders.length !== 1 ? 's' : ''} available
-        </p>
-      </div>
-
-      {/* Tenders List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-2 border-zinc-600 border-t-emerald-400" />
-            <p className="text-sm text-zinc-400">Loading tenders...</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold text-cyan-400">
+            <Truck className="h-3.5 w-3.5" />
+            Carrier Freight Exchange
           </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Live Freight Board</h1>
+          <p className="text-xs sm:text-sm text-zinc-400">
+            Browse verified freight loads and place private zero-knowledge bids. Competitors cannot see your rates.
+          </p>
+        </div>
+
+        <Link
+          to="/carrier/bids"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-surface-200 hover:bg-surface-300 border border-white/10 text-white font-semibold text-xs transition-colors"
+        >
+          <Lock className="h-3.5 w-3.5 text-emerald-400" />
+          My Active Bids & Reveals
+        </Link>
+      </div>
+
+      {/* Filter & Search Bar */}
+      <div className="space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          {/* Status Tabs */}
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface-100/90 border border-white/5 overflow-x-auto">
+            <button
+              onClick={() => setStatusFilter('all')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                statusFilter === 'all' ? 'bg-surface-300 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              All Open Freight ({biddingCount + revealCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter('bidding')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                statusFilter === 'bidding' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Accepting Bids ({biddingCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter('reveal')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                statusFilter === 'reveal' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              In Reveal Phase ({revealCount})
+            </button>
+          </div>
+
+          {/* Search Box */}
+          <div className="relative w-full lg:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Search origin, destination, or ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full glass-input pl-9 pr-3 py-2 rounded-xl text-xs text-white placeholder-zinc-500"
+            />
+          </div>
+        </div>
+
+        {/* Equipment Type Quick Filter */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <span className="text-xs text-zinc-500 font-medium">Equipment:</span>
+          {EQUIPMENT_FILTERS.map((eq) => (
+            <button
+              key={eq.id}
+              onClick={() => setEquipmentFilter(eq.id)}
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                equipmentFilter === eq.id
+                  ? 'bg-surface-200 border border-white/10 text-white'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              {eq.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tenders Grid / List */}
+      {loading ? (
+        <div className="py-20 text-center space-y-3">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-cyan-400" />
+          <p className="text-xs text-zinc-400 font-mono">Loading active freight board...</p>
         </div>
       ) : filteredTenders.length === 0 ? (
         <EmptyState
           icon="🚛"
-          title="No Auctions Available"
-          description="Check back later for new freight jobs. All bids are private and mathematically guaranteed."
+          title="No Freight Auctions Match Your Search"
+          description="Adjust your search filters or check back shortly for new loads posted by shippers."
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {filteredTenders.map((tender) => (
-            <a
+            <Link
               key={tender.tenderId}
-              href={`/carrier/tender/${tender.tenderId}`}
-              className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition-all hover:border-zinc-700 hover:bg-zinc-900"
+              to={`/carrier/tender/${tender.tenderId}`}
+              className="group block p-5 sm:p-6 rounded-2xl glass-card glass-card-hover border border-white/10 hover:border-cyan-500/40 transition-all shadow-lg"
             >
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <div className="mb-2 flex items-center gap-3">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                {/* Left: Status & Lane */}
+                <div className="space-y-2.5">
+                  <div className="flex flex-wrap items-center gap-3">
                     <StatusBadge status={tender.status} />
-                    <span className="font-mono text-xs text-zinc-500">
-                      #{tender.tenderId.slice(0, 8)}
-                    </span>
+                    <span className="font-mono text-xs text-zinc-500">#{tender.tenderId.slice(0, 10)}</span>
+                    {tender.status === TenderStatus.BIDDING_OPEN && tender.biddingDeadline && (
+                      <CountdownTimer deadline={tender.biddingDeadline} compact />
+                    )}
                   </div>
+
                   <LaneDisplay
-                    origin={tender.loadSpec?.origin || '—'}
-                    destination={tender.loadSpec?.destination || '—'}
-                    size="sm"
+                    origin={tender.loadSpec?.origin || 'Los Angeles, CA'}
+                    destination={tender.loadSpec?.destination || 'Chicago, IL'}
+                    size="md"
                   />
                 </div>
-              </div>
 
-              <div className="flex items-center gap-6 text-right">
-                <div>
-                  <p className="text-xs text-zinc-500">Equipment</p>
-                  <p className="text-sm text-white">
-                    {tender.loadSpec?.equipmentType?.replace('_', ' ') || '—'}
-                  </p>
+                {/* Right: Equipment Specs, Sealed Bid Count & Action Button */}
+                <div className="flex flex-wrap items-center gap-6 sm:gap-8 justify-between lg:justify-end pt-3 lg:pt-0 border-t lg:border-t-0 border-white/5 text-xs">
+                  <div>
+                    <span className="text-zinc-500 block">Equipment</span>
+                    <span className="font-semibold text-white">
+                      {tender.loadSpec?.equipmentType?.replace('_', ' ') || 'Dry Van'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-zinc-500 block">Weight</span>
+                    <span className="font-mono font-semibold text-white">
+                      {tender.loadSpec?.weightLbs
+                        ? `${(tender.loadSpec.weightLbs / 1000).toFixed(0)}k lbs`
+                        : '42k lbs'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-zinc-500 block">Competitor Bids</span>
+                    <span className="font-mono font-bold text-cyan-400 text-sm">
+                      {tender.carrierCount || 0} Sealed
+                    </span>
+                  </div>
+
+                  <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-bold text-xs shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-all">
+                    <span>{tender.status === TenderStatus.REVEAL_PHASE ? 'Reveal Rate' : 'Place Private Bid'}</span>
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-zinc-500">Weight</p>
-                  <p className="font-mono text-sm text-white">
-                    {tender.loadSpec?.weightLbs
-                      ? `${(tender.loadSpec.weightLbs / 1000).toFixed(0)}k`
-                      : '—'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-zinc-500">Bids</p>
-                  <p className="font-mono text-sm text-white">{tender.carrierCount}</p>
-                </div>
-                <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-900/50 px-3 py-1.5 text-xs font-medium text-emerald-400">
-                  Place Bid
-                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </span>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       )}

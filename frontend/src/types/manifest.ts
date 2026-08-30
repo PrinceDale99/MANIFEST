@@ -174,6 +174,8 @@ export interface ProofServerStatus {
 export interface WalletState {
   connected: boolean
   address?: string
+  coinPublicKey?: string
+  encryptionPublicKey?: string
   balance?: bigint
   network: 'preview' | 'preprod' | 'mainnet'
 }

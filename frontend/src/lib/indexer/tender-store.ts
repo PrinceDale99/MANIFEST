@@ -87,39 +87,54 @@ class TenderStore {
   }
 
   /**
-   * Get commitments for a specific tender.
+   * Add or update a tender and persist to storage.
    */
-  getCommitments(tenderId: string): BidCommitment[] {
-    return this.commitments.get(tenderId) || []
+  addTender(tender: Tender): void {
+    this.tenders.set(tender.tenderId, tender)
+    this.persistTenders()
+    this.notifyListeners()
+  }
+
+  /**
+   * Update fields of an existing tender.
+   */
+  updateTender(tenderId: string, updates: Partial<Tender>): void {
+    const existing = this.tenders.get(tenderId)
+    if (existing) {
+      const updated = { ...existing, ...updates }
+      this.tenders.set(tenderId, updated)
+      this.persistTenders()
+      this.notifyListeners()
+    }
+  }
+
+  private persistTenders(): void {
+    if (typeof localStorage !== 'undefined') {
+      const list = Array.from(this.tenders.values())
+      localStorage.setItem('manifest_tenders', JSON.stringify(list))
+    }
   }
 
   // ─── Private Methods ─────────────────────────────────────────────────────
 
   private async fetchAllTenders(): Promise<void> {
     try {
-      const response = await fetch(`${PROOF_SERVER_URL}/api/tenders`)
-      if (!response.ok) return
-
-      const tenders: Tender[] = await response.json()
-      let changed = false
-
-      for (const tender of tenders) {
-        const existing = this.tenders.get(tender.tenderId)
-        if (
-          !existing ||
-          existing.status !== tender.status ||
-          existing.lowestDisclosedBid !== tender.lowestDisclosedBid
-        ) {
-          this.tenders.set(tender.tenderId, tender)
-          changed = true
+      if (typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('manifest_tenders')
+        if (stored) {
+          const tenders: Tender[] = JSON.parse(stored)
+          let changed = false
+          for (const tender of tenders) {
+            if (!this.tenders.has(tender.tenderId)) {
+              this.tenders.set(tender.tenderId, tender)
+              changed = true
+            }
+          }
+          if (changed) this.notifyListeners()
         }
       }
-
-      if (changed) {
-        this.notifyListeners()
-      }
     } catch (error) {
-      console.warn('[Manifest TenderStore] Failed to fetch tenders:', error)
+      console.warn('[Manifest TenderStore] Error syncing local tenders:', error)
     }
   }
 

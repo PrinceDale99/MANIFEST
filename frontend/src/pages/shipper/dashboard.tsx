@@ -47,7 +47,7 @@ export default function ShipperDashboardPage() {
           </p>
         </div>
         <a
-          href="/shipper/tender/new"
+          href="/shipper/new"
           className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
         >
           + New Tender

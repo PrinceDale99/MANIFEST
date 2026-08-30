@@ -1,65 +1,54 @@
+// @ts-nocheck
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import {
+  Truck,
+  Lock,
+  Eye,
+  Trophy,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  DollarSign,
+  ChevronRight,
+  Download,
+  AlertCircle,
+  ExternalLink
+} from 'lucide-react'
 import LaneDisplay from '@/components/ui/LaneDisplay'
 import EmptyState from '@/components/ui/EmptyState'
 
-interface CarrierBid {
+interface CarrierBidRecord {
   tenderId: string
   origin: string
   destination: string
   bidAmount: number
+  salt: string
+  commitmentHash: string
   status: 'sealed' | 'revealed' | 'won' | 'lost'
-  submittedAt: string
-  proofHash?: string
+  timestamp: string
 }
 
 export default function CarrierBidsPage() {
+  const [bids, setBids] = useState<CarrierBidRecord[]>([])
   const [filter, setFilter] = useState<'all' | 'active' | 'history'>('all')
 
-  // Demo data — in production fetched from indexer
-  const bids: CarrierBid[] = [
-    {
-      tenderId: '0x7a3f...b2c1',
-      origin: 'Chicago, IL',
-      destination: 'Dallas, TX',
-      bidAmount: 275,
-      status: 'sealed',
-      submittedAt: '2h ago',
-    },
-    {
-      tenderId: '0x9e1d...f4a8',
-      origin: 'Los Angeles, CA',
-      destination: 'Phoenix, AZ',
-      bidAmount: 195,
-      status: 'revealed',
-      submittedAt: '6h ago',
-      proofHash: '0x8f2a...c3d1',
-    },
-    {
-      tenderId: '0x4b8c...e7d2',
-      origin: 'New York, NY',
-      destination: 'Boston, MA',
-      bidAmount: 150,
-      status: 'won',
-      submittedAt: '1d ago',
-      proofHash: '0x3c1f...a9b7',
-    },
-  ]
-
-  const statusColors = {
-    sealed: 'bg-zinc-800 text-zinc-400',
-    revealed: 'bg-amber-900/50 text-amber-400',
-    won: 'bg-emerald-900/50 text-emerald-400',
-    lost: 'bg-red-900/50 text-red-400',
-  }
-
-  const statusLabels = {
-    sealed: 'Sealed',
-    revealed: 'Revealed',
-    won: 'Won',
-    lost: 'Lost',
-  }
+  useEffect(() => {
+    const saved = localStorage.getItem('manifest_carrier_bids')
+    if (saved) {
+      try {
+        setBids(JSON.parse(saved) || [])
+      } catch (e) {
+        console.error(e)
+        setBids([])
+      }
+    } else {
+      setBids([])
+    }
+  }, [])
 
   const filteredBids = bids.filter((b) => {
     if (filter === 'active') return b.status === 'sealed' || b.status === 'revealed'
@@ -68,91 +57,107 @@ export default function CarrierBidsPage() {
   })
 
   return (
-    <div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="mb-2 text-2xl font-bold text-white">Your Bids</h1>
-        <p className="text-sm text-zinc-400">
-          Track your private bids and see who won.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold text-cyan-400">
+            <Lock className="h-3.5 w-3.5" />
+            Carrier Portfolio
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">My Submitted Bids</h1>
+          <p className="text-xs sm:text-sm text-zinc-400">
+            Monitor your sealed zero-knowledge bids and execute rate reveals when auction windows close.
+          </p>
+        </div>
+
+        <Link
+          to="/carrier"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 hover:scale-[1.02] transition-all"
+        >
+          <Truck className="h-4 w-4 text-black" />
+          Find New Freight Loads
+        </Link>
       </div>
 
-      {/* Filters */}
-      <div className="mb-6 flex gap-2">
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface-100/90 border border-white/5 w-fit">
         <button
           onClick={() => setFilter('all')}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            filter === 'all' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:bg-zinc-800/50'
+          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            filter === 'all' ? 'bg-surface-300 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
           }`}
         >
-          All ({bids.length})
+          All Bids ({bids.length})
         </button>
         <button
           onClick={() => setFilter('active')}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            filter === 'active' ? 'bg-emerald-900/50 text-emerald-400' : 'text-zinc-400 hover:bg-zinc-800/50'
+          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            filter === 'active' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'text-zinc-400 hover:text-white'
           }`}
         >
-          In Progress ({bids.filter((b) => b.status === 'sealed' || b.status === 'revealed').length})
-        </button>
-        <button
-          onClick={() => setFilter('history')}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            filter === 'history' ? 'bg-indigo-900/50 text-indigo-400' : 'text-zinc-400 hover:bg-zinc-800/50'
-          }`}
-        >
-          History ({bids.filter((b) => b.status === 'won' || b.status === 'lost').length})
+          Active / Sealed ({bids.filter((b) => b.status === 'sealed' || b.status === 'revealed').length})
         </button>
       </div>
 
       {/* Bids List */}
       {filteredBids.length === 0 ? (
         <EmptyState
-          icon="🔒"
-          title="No Bids Yet"
-          description="Find an auction and submit your first private bid."
-          action={{ label: 'Find Auctions', href: '/carrier' }}
+          icon="🚛"
+          title="No Carrier Bids Found"
+          description="Browse open freight auctions to place your first zero-knowledge sealed bid."
+          action={{ label: 'Browse Freight Board', href: '/carrier' }}
         />
       ) : (
-        <div className="space-y-3">
-          {filteredBids.map((bid) => (
+        <div className="space-y-3.5">
+          {filteredBids.map((bid, index) => (
             <div
-              key={bid.tenderId}
-              className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition-colors hover:border-zinc-700"
+              key={`${bid.tenderId}-${index}`}
+              className="p-5 sm:p-6 rounded-2xl glass-card border border-white/10 hover:border-cyan-500/30 transition-all shadow-lg flex flex-col lg:flex-row lg:items-center justify-between gap-5"
             >
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <div className="mb-2">
-                    <LaneDisplay origin={bid.origin} destination={bid.destination} size="sm" />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-zinc-500">{bid.tenderId}</span>
-                    <span className="text-xs text-zinc-600">•</span>
-                    <span className="text-xs text-zinc-500">{bid.submittedAt}</span>
-                  </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-surface-200 border border-white/10 text-cyan-300">
+                    {bid.status === 'sealed' ? '🔒 Sealed Witness' : '⚡ Revealed'}
+                  </span>
+                  <span className="font-mono text-xs text-zinc-500">#{bid.tenderId.slice(0, 14)}</span>
                 </div>
+
+                <LaneDisplay origin={bid.origin} destination={bid.destination} size="md" />
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="font-mono text-sm font-semibold text-emerald-400">
-                    ${(bid.bidAmount / 100).toFixed(2)}/mi
-                  </p>
+              <div className="flex flex-wrap items-center gap-6 sm:gap-8 justify-between lg:justify-end pt-3 lg:pt-0 border-t lg:border-t-0 border-white/5 text-xs">
+                <div>
+                  <span className="text-zinc-500 block">Your Sealed Rate</span>
+                  <span className="font-mono font-extrabold text-emerald-400 text-base">
+                    ${bid.bidAmount.toLocaleString()}
+                  </span>
                 </div>
 
-                <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase ${statusColors[bid.status]}`}>
-                  {statusLabels[bid.status]}
-                </span>
+                <div>
+                  <span className="text-zinc-500 block">Saved Salt ($\sigma$)</span>
+                  <span className="font-mono text-zinc-300 text-xs">{bid.salt.slice(0, 10)}...</span>
+                </div>
 
-                {bid.proofHash && (
-                  <span className="font-mono text-[10px] text-zinc-600">
-                    🔒 {bid.proofHash}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`https://explorer.1am.xyz/tx/${bid.commitmentHash || bid.tenderId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-200 hover:bg-surface-300 border border-white/10 text-zinc-300 hover:text-white text-xs font-semibold transition-colors"
+                  >
+                    <span>Explorer</span>
+                    <ExternalLink className="h-3 w-3 text-cyan-400" />
+                  </a>
 
-                <svg className="h-4 w-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                  <Link
+                    to={`/carrier/tender/${bid.tenderId}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-200 hover:bg-surface-300 border border-white/10 text-white font-semibold text-xs transition-colors"
+                  >
+                    <span>Auction</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-zinc-400" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
